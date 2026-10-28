@@ -19,14 +19,15 @@ import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.dirname(HERE))
 from common import API, DATA, MANIFESTS, read_jsonl, write_json  # noqa: E402
 sys.path.insert(0, API)
 import plugin_api as PA  # noqa: E402
 from recipe import RecipeError, check_batch, check_recipe  # noqa: E402
 from text_slots import TemplateError, check_templates  # noqa: E402
 
-from plugin_host import PluginError, PluginHost  # noqa: E402
-from materialize import Materializer  # noqa: E402
+from runner.plugin_host import PluginError, PluginHost  # noqa: E402
+from runner.materialize import Materializer  # noqa: E402
 
 REQUIRED = ("databuilder.py", "analysis.py", "text_templates.yaml", "candidate.yaml", "proposal.md")
 OPTIONAL = ("memory.md",)
@@ -39,23 +40,8 @@ SIM_STEPS = 200
 
 
 def static_scan(path: str) -> List[str]:
-    errs = []
-    try:
-        tree = ast.parse(open(path).read(), path)
-    except SyntaxError as e:
-        return [f"{os.path.basename(path)}: syntax error: {e}"]
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.Import, ast.ImportFrom)):
-            names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module or ""]
-            for n in names:
-                if n.split(".")[0] not in PA.ALLOWED_IMPORTS:
-                    errs.append(f"{os.path.basename(path)}:{node.lineno}: import {n} not allowed")
-        elif isinstance(node, ast.Name) and node.id in BANNED_CALLS:
-            errs.append(f"{os.path.basename(path)}:{node.lineno}: use of {node.id} not allowed")
-        elif isinstance(node, ast.Attribute) and node.attr.startswith("__") and node.attr not in ("__init__", "__name__"):
-            errs.append(f"{os.path.basename(path)}:{node.lineno}: dunder attribute {node.attr} not allowed")
-    return errs
-
+    from experiment.improvement.checks import static_scan as scan
+    return scan(path, PA.ALLOWED_IMPORTS)
 
 def synth_rows(step: int, recipes: List[Dict], key: str) -> List[Dict]:
     rng = random.Random(f"{key}:{step}")
@@ -76,12 +62,15 @@ def synth_probe(q: Dict, step: int, key: str) -> Dict:
 class Sim:
     """Drives a candidate for SIM_STEPS steps with synthetic signals, applying the real recipe and probe limits."""
 
-    def __init__(self, cand: str, scratch: str, log: str, seed: int, signal_key: str, templates: set, cy: Dict):
-        self.mat = Materializer(cand)          # every recipe's text is rendered exactly as in training (reactdata-v0 gap)
-        self.pool_ids = {r["clip_id"] for r in read_jsonl(os.path.join(MANIFESTS, "train_pool.jsonl"))}
-        self.probe_ids = sorted(r["clip_id"] for r in read_jsonl(os.path.join(MANIFESTS, "inner_probe.jsonl")))
+    def __init__(self, cand: str, scratch: str, log: str, seed: int, signal_key: str, templates: set, cy: Dict, *, paths=None, host_factory=None, prompt_wrapper=None):
+        manifests = paths.manifests if paths else MANIFESTS
+        data = paths.data if paths else DATA
+        self.mat = Materializer(cand, paths=paths, prompt_wrapper=prompt_wrapper)          # every recipe's text is rendered exactly as in training (reactdata-v0 gap)
+        self.pool_ids = {r["clip_id"] for r in read_jsonl(os.path.join(manifests, "train_pool.jsonl"))}
+        self.probe_ids = sorted(r["clip_id"] for r in read_jsonl(os.path.join(manifests, "inner_probe.jsonl")))
         self.templates, self.key = templates, signal_key
-        self.host = PluginHost(cand, os.path.join(DATA, "pool_view.json"), scratch, log)
+        self.host = (host_factory or PluginHost)(cand, os.path.join(data, "pool_view.json"), scratch, log,
+                                                **({"api": paths.api} if paths else {}))
         tl = sorted(templates)
         self.host.call("init", timeout=120, builder_config={**(cy.get("builder") or {}), "templates": tl},
                        analysis_config={**(cy.get("analysis") or {}), "templates": tl}, seed=seed,
@@ -158,18 +147,12 @@ def tv(a: Counter, b: Counter) -> float:
     return 0.5 * sum(abs(a[k] / na - b[k] / nb) for k in set(a) | set(b))
 
 
-def run_checks(cand: str, work: str) -> Dict:
+def run_checks(cand: str, work: str, *, paths=None, host_factory=None, prompt_wrapper=None) -> Dict:
+    sim_options = dict(paths=paths, host_factory=host_factory, prompt_wrapper=prompt_wrapper)
     out = {"candidate": os.path.abspath(cand), "errors": [], "warnings": []}
     E = out["errors"]
-    for f in REQUIRED:
-        p = os.path.join(cand, f)
-        if not os.path.isfile(p):
-            E.append(f"missing {f}")
-        elif os.path.getsize(p) > MAX_BYTES:
-            E.append(f"{f} larger than {MAX_BYTES} bytes")
-    extra = sorted(set(os.listdir(cand)) - set(REQUIRED) - set(OPTIONAL))
-    if extra:
-        E.append(f"unexpected files in the candidate directory: {extra}")
+    from experiment.improvement.checks import file_errors
+    E.extend(file_errors(cand, REQUIRED, OPTIONAL, MAX_BYTES))
     if E:
         return out
     try:
@@ -209,18 +192,18 @@ def run_checks(cand: str, work: str) -> Dict:
     sims = {}
     try:
         for name, key in (("A", "sig0"), ("B", "sig0"), ("P", "sig1")):
-            s = Sim(cand, os.path.join(work, f"scr_{name}"), log, 1000, key, templates, cy)
+            s = Sim(cand, os.path.join(work, f"scr_{name}"), log, 1000, key, templates, cy, **sim_options)
             for k in range(SIM_STEPS):
                 s.step(k)
             sims[name] = (s.trace, dict(s.n_probe))
             s.close()
-        s = Sim(cand, os.path.join(work, "scr_R1"), log, 1000, "sig0", templates, cy)
+        s = Sim(cand, os.path.join(work, "scr_R1"), log, 1000, "sig0", templates, cy, **sim_options)
         for k in range(100):
             s.step(k)
         st = json.loads(json.dumps(s.state()))
         first = s.trace
         s.close()
-        s = Sim(cand, os.path.join(work, "scr_R2"), log, 1000, "sig0", templates, cy)
+        s = Sim(cand, os.path.join(work, "scr_R2"), log, 1000, "sig0", templates, cy, **sim_options)
         s.load(st)
         for k in range(100, SIM_STEPS):
             s.step(k)

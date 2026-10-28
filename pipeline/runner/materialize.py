@@ -20,28 +20,31 @@ from text_slots import check_templates, render  # noqa: E402
 
 
 class Materializer:
-    def __init__(self, candidate_dir: str) -> None:
+    def __init__(self, candidate_dir: str, *, paths=None, prompt_wrapper=None) -> None:
+        manifests = paths.manifests if paths else MANIFESTS
+        data = paths.data if paths else DATA
+        self.frames = os.path.join(data, "frames512") if paths else FRAMES
+        self.wrap_prompt = prompt_wrapper or wrap_prompt
         self.templates = check_templates(yaml.safe_load(open(os.path.join(candidate_dir, "text_templates.yaml"))))
         self.template_ids = set(self.templates)
         cy = os.path.join(candidate_dir, "candidate.yaml")
         self.candidate_yaml = yaml.safe_load(open(cy)) if os.path.exists(cy) else {}
-        pool = read_jsonl(os.path.join(MANIFESTS, "train_pool.jsonl"))
-        probe = read_jsonl(os.path.join(MANIFESTS, "inner_probe.jsonl"))
+        pool = read_jsonl(os.path.join(manifests, "train_pool.jsonl"))
+        probe = read_jsonl(os.path.join(manifests, "inner_probe.jsonl"))
         self.clips = {r["clip_id"]: r for r in pool + probe}
         self.clip_ids = {r["clip_id"] for r in pool}               # trainable clips (inner probe excluded)
         self.probe_ids = sorted(r["clip_id"] for r in probe)
-        self.probe_eval_rows = read_jsonl(os.path.join(MANIFESTS, "inner_probe_eval.jsonl"))
-        self.pool_view_path = os.path.join(DATA, "pool_view.json")
+        self.probe_eval_rows = read_jsonl(os.path.join(manifests, "inner_probe_eval.jsonl"))
+        self.pool_view_path = os.path.join(data, "pool_view.json")
 
-    @staticmethod
-    def frame(clip_id: str, t: int) -> str:
+    def frame(self, clip_id: str, t: int) -> str:
         if t == 0:
-            return os.path.join(FRAMES, clip_id, "f0.png")
-        return os.path.join(FRAMES, clip_id, f"mp4_{t:02d}.png")
+            return os.path.join(self.frames, clip_id, "f0.png")
+        return os.path.join(self.frames, clip_id, f"mp4_{t:02d}.png")
 
     @functools.lru_cache(maxsize=None)
     def _wrapped(self, task: str, desc: str) -> str:
-        return wrap_prompt(task, desc)
+        return self.wrap_prompt(task, desc)
 
     def render(self, r: dict) -> str:
         c = self.clips[r["clip_id"]]
@@ -55,5 +58,5 @@ class Materializer:
         imgs = [f0] + [self.frame(cid, t) for t in r["context_frames"]]
         conv = [{"from": "human", "value": self.render(r)}, {"from": "gpt", "value": "<img>"}]
         tgt = r.get("target_frame", N_FRAMES - 1)
-        target = os.path.join(FRAMES, cid, "final.png") if tgt == N_FRAMES - 1 else self.frame(cid, tgt)   # PNG final / corrected mp4
+        target = os.path.join(self.frames, cid, "final.png") if tgt == N_FRAMES - 1 else self.frame(cid, tgt)   # PNG final / corrected mp4
         return Row(id=f"{cid}|{rid}", conversations=ensure_gen_token(conv), images=imgs, target_image=target, cond_image=f0, raw=dict(r))

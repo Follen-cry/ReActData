@@ -1,5 +1,7 @@
 # reactdata-v5
 
+调度按 **ExperimentDesign → 共享阶段操作 → TaskAdapter** 分层，reactdata 和 synthetic task 复用同一套 baseline/confirmation/selection/final 实现。旧 CLI 保留；Agent 回执、授权证据流、训练组件、扩展方式和验证结果见 [MODULARITY.md](MODULARITY.md)。冻结协议和实验定义保持不变；架构入口和依赖方向见该文档的“目录导航与依赖方向”。
+
 **一句话**：一个由 LLM agent（Builder Agent，`claude -p --model sonnet`）提出"训练数据程序"、由固定 Runner 负责训练 / 评测 / 统计选择的自动化实验。
 研究问题是：**只有 16 个训练视频时，利用视频的中间过程帧（作为训练目标或 ViT 上下文），能否让 InternVL-U 的单帧 F0 → final 生成变得更好——包括训练池中没有的 move 任务？**
 
@@ -47,7 +49,9 @@ reactdata-v5/
 ├── configs/
 │   └── train.yaml            训练配置：继承 src/internvlu-train/configs/v3/N0.yaml，100 step，512 area，LoRA init seed 42
 ├── api/                      **固定契约**（只读挂载给 agent 和插件沙箱）
-├── runner/                   **Runner**（只有 Runner 运行；agent 看不到）
+├── runner/                   CLI、训练、沙箱及原基础设施（agent 看不到）
+├── experiment/               assembly + workflow / improvement / evidence / runtime
+├── tasks/reactdata/           reactdata 的任务能力实现
 ├── scorers/
 │   └── analogy_grid.py       规则打分器（Runner-only）
 ├── seeds/
@@ -56,7 +60,7 @@ reactdata-v5/
 ├── records/                  每次 run 的小文件备份（进 git），大文件留在 scratch
 │   ├── smoke1/               冒烟测试 run（4-step 训练、4 条 eval，不是结果）
 │   └── r1/                   正式 run
-└── tests/                    CPU 测试 + 用于检查器的测试候选程序
+└── tests/                    unit/、integration/、support/、fixtures/；旧脚本保留入口
 ```
 
 大文件（数据、checkpoint、生成图片、agent HOME）不在本目录，而在：
@@ -150,15 +154,15 @@ reactdata-v5/
 
 | 文件 | 作用 |
 |---|---|
-| `test_v3_flow.py` | design-v3 状态机的 CPU 端到端测试（无 GPU、无 LLM）：伪造训练结果（真实效应 + 训练噪声 sd 0.02 + item 噪声）和 agent（一个有 +0.08 真实效应的程序，一个只改 config 的副本必须判为 duplicate）；checks / 状态机 / 统计 / 选择 / 报告是真的。断言阶段顺序、10 个串行候选的 lineage、duplicate 规则、top-3 配对 seed 确认、选中 +0.08 程序、P3 多 seed、v3 报告、replicate-mean 参照、agent 输入、proposal 修复。`python tests/test_v3_flow.py` |
-| `test_sandbox.py` | 插件沙箱和 agent 沙箱的隔离测试（用 `evil_cand` 尝试读受保护文件、联网；检查 agent 的挂载点）。`python tests/test_sandbox.py` |
-| `evil_cand/` | 恶意候选：试图在沙箱里读文件 / 联网，必须失败。 |
-| `probe_cand/` | 正常的测试候选：一半行 target 中间帧（sub-goal），带 context、feedback 和 probe——用来覆盖 checks 和训练的完整功能。 |
-| `c002_regression_cand/` | 回归用例（reactdata-v0 c002 的失败）：有 context 帧但模板缺 `{context_list}`，checks 必须拒绝。 |
-| `v4_ctx_after_target/` | 回归用例：context 帧（40）晚于 target 帧（28），checks 必须拒绝。 |
-| `v4_wrapped_nonfinal/` | 回归用例：非 final target 使用了评测 wrapper 模板，checks 必须拒绝。 |
+| `integration/test_v3_flow.py` | design-v3 状态机的 CPU 端到端测试（无 GPU、无 LLM）：伪造训练结果（真实效应 + 训练噪声 sd 0.02 + item 噪声）和 agent（一个有 +0.08 真实效应的程序，一个只改 config 的副本必须判为 duplicate）；checks / 状态机 / 统计 / 选择 / 报告是真的。断言阶段顺序、10 个串行候选的 lineage、duplicate 规则、top-3 配对 seed 确认、选中 +0.08 程序、P3 多 seed、v3 报告、replicate-mean 参照、agent 输入、proposal 修复。`python tests/test_v3_flow.py` |
+| `integration/test_sandbox.py` | 插件沙箱和 agent 沙箱的隔离测试（用 `evil_cand` 尝试读受保护文件、联网；检查 agent 的挂载点）。`python tests/test_sandbox.py` |
+| `fixtures/evil_cand/` | 恶意候选：试图在沙箱里读文件 / 联网，必须失败。 |
+| `fixtures/probe_cand/` | 正常的测试候选：一半行 target 中间帧（sub-goal），带 context、feedback 和 probe——用来覆盖 checks 和训练的完整功能。 |
+| `fixtures/c002_regression_cand/` | 回归用例（reactdata-v0 c002 的失败）：有 context 帧但模板缺 `{context_list}`，checks 必须拒绝。 |
+| `fixtures/v4_ctx_after_target/` | 回归用例：context 帧（40）晚于 target 帧（28），checks 必须拒绝。 |
+| `fixtures/v4_wrapped_nonfinal/` | 回归用例：非 final target 使用了评测 wrapper 模板，checks 必须拒绝。 |
 
-候选目录可以直接用 `python runner/checks.py tests/<cand>` 检查。
+候选目录可以直接用 `python runner/checks.py tests/fixtures/<cand>` 检查。
 
 ### 3.8 `records/<run_id>/` — run 记录备份（进 git）
 

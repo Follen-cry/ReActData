@@ -8,7 +8,7 @@ from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA, MANIFESTS, read_json, read_jsonl, write_json  # noqa: E402
-import stats  # noqa: E402
+from runner import stats  # noqa: E402
 
 
 def _cost(run_dir):
@@ -16,7 +16,9 @@ def _cost(run_dir):
     return read_json(p) if os.path.exists(p) else {}
 
 
-def build(r) -> None:
+def build(r, *, paths=None) -> None:
+    data = paths.data if paths else DATA
+    manifests = paths.manifests if paths else MANIFESTS
     st, S = r.state, r.S
     root = r.root
     jobs_dir = os.path.join(root, "jobs")
@@ -104,11 +106,11 @@ def build(r) -> None:
               f"Disk at the end: {st.get('disk_gb')} GB (limit {r.P['budget'].get('disk_gb')}).", "", "## Failures and retries", ""]
     lines += [f"- {json.dumps(f, ensure_ascii=False)[:600]}" for f in st["failures"]] or ["- none"]
     lines += ["", "## Checks", "", f"- first optimizer step: {st.get('first_step_check')}",
-              f"- data: {read_json(os.path.join(DATA, 'BUILD_DONE.json'))['counts']}; isolation ok: "
-              f"{read_json(os.path.join(MANIFESTS, 'isolation_report.json'))['isolation_ok']}; PNG/mp4 mixing allowed: "
-              f"{read_json(os.path.join(MANIFESTS, 'data_checks.json'))['png_vs_mp4']['mixing_allowed']} (policy: F0 / VAE / target from PNG, "
-              "context frames from mp4)", f"- scorer: {read_json(os.path.join(MANIFESTS, 'scorer_validation.json'))['version']}, validation "
-              f"passed: {read_json(os.path.join(MANIFESTS, 'scorer_validation.json'))['all_passed']}", ""]
+              f"- data: {read_json(os.path.join(data, 'BUILD_DONE.json'))['counts']}; isolation ok: "
+              f"{read_json(os.path.join(manifests, 'isolation_report.json'))['isolation_ok']}; PNG/mp4 mixing allowed: "
+              f"{read_json(os.path.join(manifests, 'data_checks.json'))['png_vs_mp4']['mixing_allowed']} (policy: F0 / VAE / target from PNG, "
+              "context frames from mp4)", f"- scorer: {read_json(os.path.join(manifests, 'scorer_validation.json'))['version']}, validation "
+              f"passed: {read_json(os.path.join(manifests, 'scorer_validation.json'))['all_passed']}", ""]
     summary["gpu_hours"] = dict(gpu)
     summary["agent"] = {"usd": agent_usd, "models": models}
     summary["failures"] = st["failures"]
@@ -117,7 +119,7 @@ def build(r) -> None:
     write_json(os.path.join(root, "summary.json"), summary)
 
 
-def build_v3(r) -> None:
+def build_v3(r, *, paths=None) -> None:
     """Design v3 report: training noise, screening (single runs), confirmation (paired seeds), selection, P3 multi-seed test."""
     st = r.state
     root = r.root

@@ -37,17 +37,18 @@ def cmi(t: List, y: List, z: List) -> float:
     return sum(len(ix) / n * mi([t[i] for i in ix], [y[i] for i in ix]) for ix in by.values())
 
 
-def audit_run(run_dir: str) -> Dict:
+def audit_run(run_dir: str, *, paths=None) -> Dict:
+    data = paths.data if paths else DATA
     rows = read_jsonl(os.path.join(run_dir, "rows_realized.jsonl"))
     if not rows:
         return {"n_rows": 0, "flag": False}
-    pv = {c["clip_id"]: c for c in read_json(os.path.join(DATA, "pool_view.json"))["clips"]}
+    pv = {c["clip_id"]: c for c in read_json(os.path.join(data, "pool_view.json"))["clips"]}
     area = {cid: pv[cid]["fg_area"][-1] for cid in {r["clip_id"] for r in rows}}
     vals = sorted(area.values())
     q = [vals[int(len(vals) * f)] for f in (0.25, 0.5, 0.75)]
     strat = {}
     for cid in area:
-        p = read_json(os.path.join(DATA, "meta", "train", f"{cid}.json"))["parameters"]
+        p = read_json(os.path.join(data, "meta", "train", f"{cid}.json"))["parameters"]
         strat[cid] = (p["scale_from"], p["scale_to"])
     t = [r["template_id"] for r in rows]
     y = [sum(area[r["clip_id"]] > v for v in q) for r in rows]

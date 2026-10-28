@@ -33,7 +33,8 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from common import API, EXP, TRAIN_SRC, read_json, read_jsonl, sha256_tree, write_json, write_jsonl  # noqa: E402
+from common import API, EXP, TRAIN_SRC, read_json, read_jsonl, sha256_tree, write_json, write_jsonl, implementation_hash  # noqa: E402
+sys.path.insert(0, os.path.dirname(HERE))
 sys.path.insert(0, API)
 sys.path.insert(0, TRAIN_SRC)
 sys.path.insert(0, os.path.dirname(TRAIN_SRC))      # internvlu (pipeline package) lives in src/
@@ -57,7 +58,7 @@ from internvlu_train.model import apply_adapters, build_train_model, load_compon
 from internvlu_train.optim import build_optimizer, grad_norms            # noqa: E402
 from internvlu_train.preprocess import sample_drop_state                 # noqa: E402
 
-from materialize import Materializer                                     # noqa: E402
+from runner.materialize import Materializer                                     # noqa: E402
 from plugin_host import PluginError, PluginHost                          # noqa: E402
 
 logger = logging.getLogger("reactdata")
@@ -147,32 +148,25 @@ class DynTrainer(Trainer):
         self.probe_rows = probe_rows                     # inner-probe eval rows (F0 + original text -> final)
         self.probe_ids = sorted(r["id"] for r in probe_rows)
         self.probe_predictor = probe_predictor
-        self.pending = []                                # probe results for the next Analysis.update
-        self.sched = {"last_loss": -10 ** 9, "last_gen": -10 ** 9, "n_loss": 0, "n_gen": 0}
+        from tasks.reactdata.probes import ProbeController
+        self.probes = ProbeController(self.probe_ids, self.mat.template_ids, self.mat.render)
         self.cost = {"rows": 0, "vit_images": 0, "seq_tokens": 0, "train_wall_s": 0.0, "probe_wall_s": 0.0,
                      "plugin_wall_s": 0.0, "clip_uses": {}}
         self.pool = ThreadPoolExecutor(4)
-        self.files = {}
+        from training_journal import TrainingJournal
+        self.journal = TrainingJournal(self.run["run_dir"])
 
     # -- resumable state
     def run_state(self):
-        return {"plugin": self.host.call("state"), "pending": self.pending, "sched": self.sched, "cost": self.cost,
+        probes = self.probes.state_dict()
+        return {"plugin": self.host.call("state"), "pending": probes["pending"], "sched": probes["sched"], "cost": self.cost,
                 "step": self.step}
 
     def load_run_state(self, st):
         if self.dist.is_main:
             self.host.call("load", state=st["plugin"])
-        self.pending, self.sched, self.cost = st["pending"], st["sched"], st["cost"]
-
-    def _open(self, name):
-        path = os.path.join(self.run["run_dir"], name)
-        if os.path.exists(path):                        # resumed: drop records of steps that will be redone
-            keep = [l for l in open(path) if json.loads(l)["step"] < self.step]
-            open(path, "w").writelines(keep)
-        self.files[name] = open(path, "a")
-
-    def _write(self, name, rec):
-        self.files[name].write(json.dumps(rec, ensure_ascii=False) + "\n")
+        self.probes.load_state_dict(st)
+        self.cost = st["cost"]
 
     # -- one optimizer step on this rank's rows
     def _train_rows(self, rows_items, js, step):
@@ -226,93 +220,11 @@ class DynTrainer(Trainer):
         return out
 
     # -- probes (all ranks)
-    def _check_requests(self, reqs, step):
-        """rank 0: keep the legal requests, report the others back to the plugin."""
-        ok, rejected = [], []
-        seen = set()
-        for q in reqs[:4]:
-            kind = q.get("kind") if isinstance(q, dict) else None
-            why = None
-            if kind not in ("loss", "generate"):
-                why = "unknown kind"
-            elif kind in seen:
-                why = "one request per kind per step"
-            elif kind == "loss":
-                if step - self.sched["last_loss"] < PA.LOSS_PROBE_MIN_GAP or self.sched["n_loss"] >= PA.MAX_LOSS_PROBES:
-                    why = "loss probe budget (gap / count)"
-                else:
-                    try:
-                        items = q["items"]
-                        if not isinstance(items, list) or not 1 <= len(items) <= PA.PROBE_MAX_ITEMS:
-                            raise RecipeError(f"1..{PA.PROBE_MAX_ITEMS} items")
-                        items = [check_recipe(it, set(self.probe_ids), self.mat.template_ids) for it in items]
-                        for it in items:
-                            self.mat.render(it)                  # template / context compatibility
-                        q = {"kind": "loss", "items": items}
-                    except (RecipeError, TemplateError, KeyError, TypeError) as e:
-                        why = f"bad items: {e}"[:300]
-            else:
-                if step - self.sched["last_gen"] < PA.GENERATE_PROBE_MIN_GAP or self.sched["n_gen"] >= PA.MAX_GENERATE_PROBES:
-                    why = "generate probe budget (gap / count)"
-                else:
-                    ids = q.get("clip_ids")
-                    if (not isinstance(ids, list) or not 1 <= len(ids) <= PA.PROBE_MAX_ITEMS or len(set(ids)) != len(ids)
-                            or any(i not in self.probe_ids for i in ids)):
-                        why = "clip_ids must be distinct inner-probe ids (1..32)"
-                    else:
-                        q = {"kind": "generate", "clip_ids": list(ids)}
-            if why:
-                rejected.append({"kind": kind, "status": "rejected", "reason": why, "step": step})
-            else:
-                seen.add(kind)
-                ok.append(q)
-        return ok, rejected
-
-    def _run_probes(self, reqs, step):
-        results = []
-        t0 = time.time()
-        cpu, cuda = torch.get_rng_state(), torch.cuda.get_rng_state_all()
-        try:
-            for q in reqs:
-                if q["kind"] == "loss":
-                    mine = []
-                    self.model.eval()
-                    with torch.no_grad():
-                        for idx in range(self.dist.rank, len(q["items"]), self.dist.world_size):
-                            it = q["items"][idx]
-                            item = self.ib.build(self.mat.row(it, f"probe|{it['clip_id']}"), DropCondType.none)
-                            batch = self.collator([item]).to(self.dist.device)
-                            h = crc(f"probe:{it['clip_id']}")
-                            torch.manual_seed(h)
-                            torch.cuda.manual_seed(h)
-                            with self._autocast():
-                                out = self.model(batch)
-                            mine.append((idx, {**it, "loss": float(gen_term(out)), "sigma": float(out.sigma[0])}))
-                    self.model.train()
-                    allr = sorted(x for part in self._gather(mine) for x in part)
-                    results.append({"kind": "loss", "step": step, "items": [r for _, r in allr]})
-                else:
-                    d = os.path.join(self.run["run_dir"], "probes", f"gen_step{step:03d}")
-                    path = os.path.join(d, "rows.jsonl")
-                    if self.dist.is_main:
-                        os.makedirs(d, exist_ok=True)
-                        want = set(q["clip_ids"])
-                        write_jsonl(path, [r for r in self.probe_rows if r["id"] in want])
-                    self.dist.barrier()
-                    evaluate_set(self.probe_predictor, path, d, self.dist, size=512, resize_mode="area")
-                    items = []
-                    if self.dist.is_main:
-                        from score import score_dir
-                        sc = score_dir(d, read_jsonl(path))
-                        items = [{"clip_id": x["id"], "score": x["score"], "sub": x["sub"], "valid": x["valid"]} for x in sc["items"]]
-                    results.append({"kind": "generate", "step": step, "items": items})
-        finally:
-            torch.set_rng_state(cpu)
-            torch.cuda.set_rng_state_all(cuda)
-            self.model.train()
-        self.cost["probe_wall_s"] += time.time() - t0
-        return results
-
+    def _run_probes(self, requests, step):
+        from tasks.reactdata.gpu_probes import execute_probes
+        return execute_probes(requests, step, model=self.model, item_builder=self.ib, materializer=self.mat,
+            predictor=self.probe_predictor, probe_rows=self.probe_rows, dist=self.dist, gather=self._gather,
+            run_dir=self.run["run_dir"], cost=self.cost, autocast=self._autocast)
     def fit(self):
         plan, W, rank = self.plan, self.dist.world_size, self.dist.rank
         self.ddp_model.train()
@@ -320,7 +232,7 @@ class DynTrainer(Trainer):
             cb.on_train_start(self)
         if self.dist.is_main:
             for name in ("rows_realized.jsonl", "signals.jsonl", "probes.jsonl"):
-                self._open(name)
+                self.journal.open(name, self.step)
         t0, step0 = time.time(), self.step
         total = plan.total_steps
         while self.step < total:
@@ -370,22 +282,19 @@ class DynTrainer(Trainer):
                                  "cfg_drop": drops[j].name})
                 info = {"step": step, "lr": metrics["lr"], "grad_norm": metrics["grad_norm"], "gen_weight": metrics.get("gen_weight"),
                         "sec_per_step": (time.time() - t0) / max(1, step - step0 + 1), "total_steps": total}
-                budget = {"loss_probe_next_allowed_step": self.sched["last_loss"] + PA.LOSS_PROBE_MIN_GAP,
-                          "generate_probe_next_allowed_step": self.sched["last_gen"] + PA.GENERATE_PROBE_MIN_GAP,
-                          "loss_probes_left": PA.MAX_LOSS_PROBES - self.sched["n_loss"],
-                          "generate_probes_left": PA.MAX_GENERATE_PROBES - self.sched["n_gen"]}
+                budget = self.probes.budget()
                 try:
                     tp = time.time()
-                    res = self.host.call("after_step", step=step, rows=rows, step_info=info, probe_results=self.pending, budget=budget)
+                    res = self.host.call("after_step", step=step, rows=rows, step_info=info, probe_results=self.probes.pending, budget=budget)
                     self.cost["plugin_wall_s"] += time.time() - tp
                     reqs = res["requests"] if self.run.get("probes", True) else []
-                    ok, rejected = self._check_requests(reqs, step)
+                    ok, rejected = self.probes.check(reqs, step)
                     msg = {"ok": ok, "rejected": rejected, "summary": res["summary"]}
                 except PluginError as e:
                     msg = {"error": f"{type(e).__name__}: {e}"[:4000]}
                 for r, text in zip(rows, texts):
-                    self._write("rows_realized.jsonl", {"step": step, **r, "text": text})
-                self._write("signals.jsonl", {"step": step, "info": info, "metrics": {k: v for k, v in metrics.items() if isinstance(v, float)},
+                    self.journal.write("rows_realized.jsonl", {"step": step, **r, "text": text})
+                self.journal.write("signals.jsonl", {"step": step, "info": info, "metrics": {k: v for k, v in metrics.items() if isinstance(v, float)},
                                               "summary": msg.get("summary"), "error": msg.get("error")})
                 for r in recipes:
                     self.cost["clip_uses"][r["clip_id"]] = self.cost["clip_uses"].get(r["clip_id"], 0) + 1
@@ -395,24 +304,20 @@ class DynTrainer(Trainer):
             msg = bcast(msg, self.dist)
             if "error" in msg:
                 raise FailRun(f"step {step}: {msg['error']}")
-            self.pending = list(msg["rejected"])
+            self.probes.pending = list(msg["rejected"])
             if msg["ok"]:
-                for q in msg["ok"]:
-                    key = "loss" if q["kind"] == "loss" else "gen"
-                    self.sched[f"last_{key}"] = step
-                    self.sched[f"n_{key}"] += 1
+                self.probes.accept(msg["ok"], step)
                 out = self._run_probes(msg["ok"], step)
-                self.pending += out
+                self.probes.pending += out
                 if self.dist.is_main:
                     for o in out:
-                        self._write("probes.jsonl", {"step": step, **o})
+                        self.journal.write("probes.jsonl", {"step": step, **o})
             self.step += 1
             self.cost["train_wall_s"] += time.time() - ts
             metrics["sec_per_step"] = (time.time() - t0) / (self.step - step0)
             self.tracker.log(metrics, self.step)
             if self.dist.is_main:
-                for f in self.files.values():
-                    f.flush()
+                self.journal.flush()
                 write_json(os.path.join(self.run["run_dir"], "progress.json"), {"step": self.step, "total": total, "time": time.time()})
             for cb in self.callbacks:
                 cb.on_step_end(self, metrics)
@@ -420,8 +325,7 @@ class DynTrainer(Trainer):
                 raise SystemExit(17)
         for cb in self.callbacks:
             cb.on_train_end(self)
-        for f in self.files.values():
-            f.close()
+        self.journal.close()
 
 
 def run_evals(run, cfg, model, comps, entries, dist, rows_limit):
@@ -467,11 +371,13 @@ def main(argv=None):
     ap.add_argument("--spec", required=True)
     args = ap.parse_args(argv)
     run = read_json(args.spec)
+    from experiment.contracts import RunPaths
+    paths = RunPaths(**run["resources"]) if "resources" in run else None
     steps = int(run["steps"])
     if not 0 <= steps <= 100:
         raise SystemExit("steps must be in 0..100 (protocol v1)")
     ov = [f"train.output_dir={run['run_dir']}", f"train.max_steps={max(steps, 1)}"] + list(run.get("overrides", []))
-    cfg = load_config(os.path.join(EXP, "configs", "train.yaml"), ov, [])
+    cfg = load_config(os.path.join(paths.exp if paths else EXP, "configs", "train.yaml"), ov, [])
     if cfg.train.global_batch_size != 16 or cfg.loss.lm_weight != 0.0 or cfg.loss.gen_warmup_steps != 0:
         raise SystemExit("config violates the protocol (global batch 16, lm_weight 0, gen weight constant)")
     dist = init_distributed(cfg.dist.backend)
@@ -492,7 +398,7 @@ def main(argv=None):
     trainer = None
     if steps > 0:
         cand = run["candidate_dir"]
-        mat = Materializer(cand)
+        mat = Materializer(cand, paths=paths)
         ib = factory.item_builder(cfg, comps.tokenizer, model.num_image_token, max_dynamic_patch=factory.entry_max_dynamic_patch(cfg, entries[0]))
         plan = TrainingPlan.build(cfg, num_rows=steps * 16, world_size=dist.world_size)
         optimizer = build_optimizer(model, cfg.optim)
@@ -509,7 +415,7 @@ def main(argv=None):
             host = ReplayHost(run["replay_rows"])
         elif dist.is_main:
             host = PluginHost(cand, mat.pool_view_path, os.path.join(run["run_dir"], "plugin_scratch"),
-                              os.path.join(run["run_dir"], "plugin.log"))
+                              os.path.join(run["run_dir"], "plugin.log"), api=paths.api if paths else None)
             host.call("init", timeout=120, builder_config={**(cy.get("builder") or {}), "templates": sorted(mat.template_ids)},
                       analysis_config={**(cy.get("analysis") or {}), "templates": sorted(mat.template_ids)},
                       seed=int(run["run_seed"]), total_steps=steps, inner_probe_ids=mat.probe_ids)
@@ -532,7 +438,7 @@ def main(argv=None):
             write_json(os.path.join(run["run_dir"], "hashes.json"), {
                 "candidate_files_sha256": sha256_tree([os.path.join(cand, f) for f in sorted(os.listdir(cand))
                                                        if os.path.isfile(os.path.join(cand, f))]),
-                "runner_sha256": sha256_tree([os.path.join(HERE, f) for f in os.listdir(HERE) if f.endswith(".py")]),
+                "runner_sha256": implementation_hash(),
                 "api_sha256": sha256_tree([os.path.join(API, f) for f in os.listdir(API) if f.endswith(".py")])})
         try:
             trainer.fit()

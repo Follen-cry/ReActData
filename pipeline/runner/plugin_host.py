@@ -27,14 +27,14 @@ class PluginError(RuntimeError):
     pass
 
 
-def bwrap_cmd(cand_dir: str, pool_path: str, scratch: str) -> list:
+def bwrap_cmd(cand_dir: str, pool_path: str, scratch: str, *, api=None) -> list:
     return ["/usr/bin/bwrap", "--unshare-all", "--die-with-parent", "--new-session",
             "--ro-bind", "/usr", "/usr", "--symlink", "usr/lib", "/lib", "--symlink", "usr/lib64", "/lib64",
             "--symlink", "usr/bin", "/bin", "--symlink", "usr/sbin", "/sbin",
             "--ro-bind", "/etc/ld.so.cache", "/etc/ld.so.cache",
             "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp",
             "--ro-bind", ENV_ROOT, ENV_ROOT,
-            "--ro-bind", API, "/api",
+            "--ro-bind", api or API, "/api",
             "--ro-bind", os.path.join(HERE, "plugin_worker.py"), "/runner/plugin_worker.py",
             "--ro-bind", cand_dir, "/cand",
             "--ro-bind", pool_path, "/data/pool_view.json",
@@ -46,14 +46,14 @@ def bwrap_cmd(cand_dir: str, pool_path: str, scratch: str) -> list:
 
 class PluginHost:
     def __init__(self, cand_dir: str, pool_path: str, scratch: str, log_path: str, *, clear_scratch: bool = True,
-                 time_limit: Optional[float] = None) -> None:
+                 time_limit: Optional[float] = None, api=None) -> None:
         from plugin_api import STEP_TIME_LIMIT_S
         self.time_limit = time_limit or STEP_TIME_LIMIT_S
         if clear_scratch:
             shutil.rmtree(scratch, ignore_errors=True)
         os.makedirs(scratch, exist_ok=True)
         self.log = open(log_path, "a")
-        self.proc = subprocess.Popen(bwrap_cmd(os.path.abspath(cand_dir), os.path.abspath(pool_path), os.path.abspath(scratch)),
+        self.proc = subprocess.Popen(bwrap_cmd(os.path.abspath(cand_dir), os.path.abspath(pool_path), os.path.abspath(scratch), api=api),
                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.log, text=True, bufsize=1,
                                      env={})       # empty environment for bwrap and the worker
         self.calls = 0
