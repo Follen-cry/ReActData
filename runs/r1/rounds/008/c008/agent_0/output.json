@@ -1,0 +1,32 @@
+{
+ "ok": true,
+ "returncode": 0,
+ "wall_s": 47.77822232246399,
+ "resumed_from": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "result": "I've written candidate c008 in `/work`. It hasn't been trained, since I can't run code here.\n\n**Evidence read:** `report.md` (the c007 entry) and the first 100 lines of `analysis_traces/c007.json`. I did not open `results.json`, the dev item files or the failure images this round. The `dev_move_*` figures in `proposal.md` are baseline numbers from my earlier reads, not c007's.\n\n**What c007 showed:** it scored 0.4043 against the baseline's 0.391 (D +0.018, CI \u22120.007 to +0.044). That is about the same as c006's 0.4147, so widening the frame range added nothing. The gain looks stable at about +0.02 and shows up in scale E_cell (0.641 against 0.522). Scale F_cell and F_transform did not improve (0.113 and 0.495, against 0.116 and 0.577), and move stayed flat. All of this is from single runs.\n\n**What c008 does:** it keeps c006/c007's structure and adds context to some of the process rows.\n- **Plain rows:** 8 of the 16 rows each step are plain final-frame rows, as before.\n- **Process rows without context:** 4 target a random frame from 36 to 52 and carry no context frame.\n- **Process rows with context:** 4 show an earlier frame (34 to 42, with F present) as ViT-only context. Their target is at least 4 frames later, up to 56. They use a new `late_ctx` template.\n- **Schedule:** static over all 100 steps, with at most 20 input images per step.\n\nFinal-frame rows never get context, so the test-time format is unchanged.\n\n**What it tests:** whether conditioning on an earlier F-present frame teaches F's trajectory, which is what single-frame targets failed to improve. The earlier context that hurt (c002) was F-absent, so this case is untested.\n\n**`analysis.py` logs:** per-template loss, a loss probe every 20 steps on 8 held-out clips (final, frame 45, and frame 50 with context frame 38), and generate probes at steps 49 and 99. Context-row loss far below plain-row loss would mean the model is copying the context.\n\n**Expected result:** scale F_transform at 0.55 or higher and dev 0.41 to 0.45. A dev score of 0.40 or lower, or rising `F_missing`, would mean no gain over c006 and c007.\n\n`proposal.md` and `memory.md` are updated.",
+ "model_usage": {
+  "claude-sonnet-5-5": {
+   "inputTokens": 70,
+   "outputTokens": 37162,
+   "thinkingTokens": 6214,
+   "cacheReadInputTokens": 2559252,
+   "cacheCreationInputTokens": 127189,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 127189,
+   "webSearchRequests": 0,
+   "costUSD": 1.1364412000000002,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "canonicalModel": "claude-sonnet-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "models": [
+  "claude-sonnet-5-5"
+ ],
+ "cost_usd": 1.1364412000000002,
+ "num_turns": 10,
+ "session_id": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "subtype": "success"
+}

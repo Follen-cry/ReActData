@@ -1,0 +1,9 @@
+{
+ "cand_id": "c000",
+ "code_sha256": "65e042d0a79e3cf9b3cf0e256746daf1666d30aaf218947206cd0de0b985f851",
+ "config_sha256": "514caa8dbedaa04bd5db505593dbdb3d101afb58996831b80f8b9d55a3f0aa87",
+ "templates_sha256": "1ff22c8cbba8eba4558ec48dd5979d6d8cfa9d1dd13b543e963d1f66baa7d8df",
+ "protocol_sha256": "27dbec46220140f86dee8816630cb92716a509f73c6b2ce5f34b25bafcbf2476",
+ "role": "fixed_baseline",
+ "class_label": "fixed"
+}

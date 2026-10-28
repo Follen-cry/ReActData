@@ -1,0 +1,14 @@
+{
+ "n_rows": 1600,
+ "templates": {
+  "late_ctx": 400,
+  "eval_format": 800,
+  "late": 400
+ },
+ "quantity": "final-frame foreground area quartile | (scale_from, scale_to)",
+ "cmi_bits": 7.226978656806016e-05,
+ "p_perm": 0.9040959040959041,
+ "flag": false,
+ "rule": "flag if p < 0.001 and CMI > 0.02 bits",
+ "mi_bits": 7.226978656806016e-05
+}

@@ -1,0 +1,18 @@
+{
+ "run_id": "p0_pilot",
+ "run_dir": "/scratch/network/ssd/junlin/reactdata-v5/runs/r1/jobs/p0_pilot",
+ "candidate_dir": "/scratch/network/ssd2/junlin/ssl_mllm/internvlu-exp/exp/reactdata-v5/seeds/fixed_f0_final",
+ "run_seed": 1,
+ "steps": 4,
+ "evals": [
+  {
+   "name": "dev",
+   "file": "/scratch/network/ssd2/junlin/ssl_mllm/internvlu-exp/exp/reactdata-v5/manifests/dev.jsonl",
+   "seeds": [
+    0
+   ]
+  }
+ ],
+ "max_eval_rows": 8,
+ "overrides": []
+}

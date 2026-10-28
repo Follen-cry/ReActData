@@ -1,0 +1,180 @@
+--- c001/databuilder.py
++++ c002/databuilder.py
+@@ -1,7 +1,6 @@
+-"""c001: baseline + sub-goal rows (E recoloured, F not yet present) for steps < sub_until, then pure final rows.
+-
+-Per step in the sub-goal phase: 8 rows target the final frame (eval_format), 8 rows target an early frame
+-(default 26: E has its new colour, F not yet) with the 'subgoal' template. After sub_until all 16 rows are final.
++"""c002: baseline (all rows target the final frame) where, for steps < ctx_until, n_ctx of the 16 rows additionally
++show an early process frame (E recoloured, F not yet present) as ViT-only context. All targets are final.
++After ctx_until all rows are plain baseline rows.
+ """
+ import random
+ 
+@@ -10,29 +9,27 @@
+     def __init__(self, config, pool, seed, total_steps):
+         self.ids = [c["clip_id"] for c in pool["clips"]]
+         self.seed = seed
+-        self.sub_until = int(config.get("sub_until", 70))
+-        self.sub_frame = int(config.get("sub_frame", 26))
+-        self.n_sub = int(config.get("n_sub", 8))
+-        self.pos = {"f": 0, "s": 0}
++        self.ctx_until = int(config.get("ctx_until", 60))
++        self.ctx_frame = int(config.get("ctx_frame", 27))
++        self.n_ctx = int(config.get("n_ctx", 8))
++        self.pos = 0
+ 
+-    def _perm(self, kind, k):
++    def _perm(self, k):
+         ids = list(self.ids)
+-        random.Random(f"{self.seed}:{kind}:{k}").shuffle(ids)
++        random.Random(f"{self.seed}:perm:{k}").shuffle(ids)
+         return ids
+ 
+-    def _take(self, kind, n):
+-        out = []
+-        for _ in range(n):
+-            k, i = divmod(self.pos[kind], len(self.ids))
+-            out.append(self._perm(kind, k)[i])
+-            self.pos[kind] += 1
+-        return out
+-
+     def next_batch(self, step):
+-        n_sub = self.n_sub if step < self.sub_until else 0
+-        rows = [{"clip_id": c, "context_frames": [], "template_id": "eval_format"} for c in self._take("f", 16 - n_sub)]
+-        rows += [{"clip_id": c, "context_frames": [], "template_id": "subgoal", "target_frame": self.sub_frame}
+-                 for c in self._take("s", n_sub)]
++        n_ctx = self.n_ctx if step < self.ctx_until else 0
++        rows = []
++        for j in range(16):
++            k, i = divmod(self.pos, len(self.ids))
++            cid = self._perm(k)[i]
++            self.pos += 1
++            if j < n_ctx:
++                rows.append({"clip_id": cid, "context_frames": [self.ctx_frame], "template_id": "ctx_final"})
++            else:
++                rows.append({"clip_id": cid, "context_frames": [], "template_id": "eval_format"})
+         random.Random(f"{self.seed}:mix:{step}").shuffle(rows)
+         return rows
+ 
+@@ -40,7 +37,7 @@
+         pass
+ 
+     def state_dict(self):
+-        return {"pos": dict(self.pos)}
++        return {"pos": self.pos}
+ 
+     def load_state_dict(self, state):
+-        self.pos = dict(state["pos"])
++        self.pos = state["pos"]
+--- c001/analysis.py
++++ c002/analysis.py
+@@ -1,18 +1,17 @@
+-"""Logs mean loss per target frame in 10-step windows; loss probe (final and sub-goal target) every 20 steps;
+-generate probe at steps 49 and 99."""
++"""Windowed loss by (template, context) every 10 steps; loss probe every 20 steps on 8 held-out clips for the plain
++and the context template (final target); generate probes (plain F0 -> final) at steps 49 and 99."""
+ 
+ 
+ class Analysis:
+     def __init__(self, config, seed, total_steps, inner_probe_ids):
+-        self.sub_frame = int(config.get("sub_frame", 26))
++        self.ctx_frame = int(config.get("ctx_frame", 27))
+         self.ids = list(inner_probe_ids)[:8]
+         self.win = {}
+-        self.hist = []
+         self.probe_log = []
+ 
+     def update(self, step, rows, step_info, probe_results):
+         for r in rows:
+-            w = self.win.setdefault(str(r["target_frame"]), [0, 0.0])
++            w = self.win.setdefault(r["template_id"], [0, 0.0])
+             w[0] += 1
+             w[1] += r["loss"]
+         for p in probe_results or []:
+@@ -23,11 +22,16 @@
+                 self.probe_log.append({"step": p["step"], "loss": {k: sum(v) / len(v) for k, v in by.items()}})
+             elif p.get("kind") == "generate" and "items" in p:
+                 sc = [it["score"] for it in p["items"]]
+-                self.probe_log.append({"step": p["step"], "gen_mean": sum(sc) / max(1, len(sc)),
+-                                       "gen_sub": [it.get("sub") for it in p["items"]]})
++                n = max(1, len(sc))
++                keys = sorted({k for it in p["items"] for k in (it.get("sub") or {})})
++                entry = {"step": p["step"], "gen_mean": sum(sc) / n}
++                for k in keys:
++                    entry[k] = sum(float((it.get("sub") or {}).get(k) or 0.0) for it in p["items"]) / n
++                self.probe_log.append(entry)
+         out = {}
+-        if step % 10 == 9:
+-            out = {"step": step, "loss_by_target": {k: v[1] / v[0] for k, v in self.win.items()}, "probes": self.probe_log}
++        if step % 10 == 9 or step == total_steps_guard(step):
++            out = {"step": step, "loss_by_template": {k: v[1] / v[0] for k, v in self.win.items()},
++                   "probes": self.probe_log}
+             self.win = {}
+         return out
+ 
+@@ -37,7 +41,7 @@
+             items = []
+             for c in self.ids:
+                 items.append({"clip_id": c, "context_frames": [], "template_id": "eval_format"})
+-                items.append({"clip_id": c, "context_frames": [], "template_id": "subgoal", "target_frame": self.sub_frame})
++                items.append({"clip_id": c, "context_frames": [self.ctx_frame], "template_id": "ctx_final"})
+             req.append({"kind": "loss", "items": items})
+         if step in (49, 99) and budget.get("generate_probes_left", 0) > 0:
+             req.append({"kind": "generate", "clip_ids": self.ids})
+@@ -48,3 +52,7 @@
+ 
+     def load_state_dict(self, state):
+         self.win, self.probe_log = state["win"], state["probe_log"]
++
++
++def total_steps_guard(step):
++    return -1
+--- c001/text_templates.yaml
++++ c002/text_templates.yaml
+@@ -1,2 +1,2 @@
+ eval_format: "{wrapped_description}"
+-subgoal: "{description}\nGenerate {target_spec}."
++ctx_final: "{wrapped_description}\nFor reference, an earlier frame of the same process:\n{context_list}"
+--- c001/candidate.yaml
++++ c002/candidate.yaml
+@@ -1,3 +1,3 @@
+ declared_class: schedule
+-builder: {sub_until: 70, sub_frame: 26, n_sub: 8}
+-analysis: {sub_frame: 26}
++builder: {ctx_until: 60, ctx_frame: 27, n_ctx: 8}
++analysis: {ctx_frame: 27}
+--- c001/proposal.md
++++ c002/proposal.md
+@@ -1,18 +1,18 @@
+-# c001 — E-state sub-goal rows, removed before the end
++# c002 — E-state frame as ViT-only context for final-frame rows, removed after step 60
+ 
+-Started from c000 (fixed baseline; the only program so far).
++Started from c001 (copied files), but replaced the idea: c001 used the E-state as a *target* and hurt; here it is *context* and every target is the final frame.
+ 
+ ## Evidence
+-Only the baseline exists (dev 0.391; move 0.408, scale 0.373; replicate sd 0.025). Sub-scores: move E_cell 0.64, F_cell 0.35, F_transform 0.18; scale E_cell 0.52, F_cell 0.12, F_transform 0.58. Error categories are dominated by E_wrong_colour (16 move / 20 scale) and F_wrong/F_wrong_transform (47 move / 54 scale). Items: dev_move_000 (0.519, E_cell 1.0 but F_transform 0.005), dev_move_003 (0.644, E_cell 1.0, F_transform 0.0), dev_move_001 (0.125, E_cell 0, E_wrong_colour + context_damaged, baseline mean 0.295 sd 0.18), dev_move_002 (0.029, E wrong colour). So even when E is right, F is derived wrongly, and E colour is often wrong: the recolour step is unreliable. Training loss is the final-frame loss only, with no explicit signal for the E stage.
++c001 (8 of 16 rows target frame 26 for 70 steps) scored 0.343 vs baseline 0.391 (D -0.043, CI [-0.072, -0.016]); move -0.058, scale -0.028. Sub-scores: move E_cell 0.639 -> 0.546, F_cell 0.349 -> 0.265; scale F_transform 0.577 -> 0.446. F_missing rose (move 8 -> 14, scale 1 -> 11): the model sometimes stops at the E-state, as the sub-goal target looks like an F-less answer. Items: dev_move_000 fell 0.519 -> 0.0 (E_wrong_colour, baseline mean 0.4195), dev_move_001 0.125 -> 0.0 (baseline mean 0.295, sd 0.18), dev_move_003 0.644 -> 0.35 (F_cell 0.735 -> 0.0). Loss probes show sub-goal loss (~0.001) is far below final loss (~0.004-0.006) and barely changes: the sub-goal is an easy copy task teaching little. Generate probe on 8 held-out clips: 0.163 at step 49 (mid sub-goal phase), 0.358 at step 99 (several zero scores at step 49). So intermediate *targets* dilute and confuse the final-frame mapping.
+ 
+ ## Hypothesis
+-Rows whose target is the frame where E already has its new colour and F does not exist yet (frame ~26) supervise the first analogy rule (A->B applied to D) in isolation, task-independently. This should raise E_cell on both tasks (it is shared by move). Dropping these rows after step 70 lets the last 30 steps be pure test-time mapping so the model ends on the test input distribution. Expected gain is mainly in E_cell, and in F_cell as a knock-on, since F depends on E.
++The process (E first, F derived from E) may still help if shown as *input* rather than as a target: F0 + the E-state frame (frame 27) as ViT context -> final frame. The row keeps the correct target and the final-frame output distribution, but the ViT sees a correct E, so the gradient on the F-derivation (E -> F via the B->C rule) is cleaner and attributes F to E. The context is dropped after step 60, so the last 40 steps train plain test-time rows (and half the earlier rows are already plain), so the model cannot depend on the context at test time. Risk: the model learns to copy the context's E and ignore F0, which would show as a gap between ctx_final and eval_format loss.
+ 
+ ## Program
+-databuilder.py: steps 0-69: 8 final-frame rows (template eval_format) + 8 rows with target_frame 26 (template subgoal: description + "Generate {target_spec}."), no context frames, clips by independent seeded permutations; steps 70-99: 16 final rows as in the baseline. text_templates.yaml adds `subgoal`. declared class: schedule.
++databuilder.py: steps 0-59: 8 rows with context_frames [27], template ctx_final (wrapped_description + context_list), 8 plain rows (eval_format); steps 60-99: 16 plain rows; every row targets frame 59 (no non-final targets, no {target_spec}). Clips come from one seeded permutation stream. Declared class: schedule.
+ 
+ ## What analysis.py measures
+-Windowed mean loss per target frame (normalised comparison is only within a target); loss probe every 20 steps on 8 held-out inner clips for final and frame-26 targets (does sub-goal loss fall faster than final loss?); generate probes at steps 49 and 99 on the same 8 clips (rule-score of F0 -> final generation, mid-run vs. end, to see whether removing sub-goals hurts or helps).
++Windowed training loss per template (ctx_final vs eval_format: if ctx loss is much lower, the model leans on the context); loss probe every 20 steps on 8 held-out clips for both templates (final target); generate probes at 49 and 99 (plain F0 -> final) logging the mean of every sub-score key the probe returns (probe keys differ from the dev E_cell/F_cell/F_transform), comparing with c001's 0.163 (step 49) / 0.358 (step 99).
+ 
+ ## Expected result
+-Dev +0.03..+0.08, mostly via move/scale E_cell (+0.1) and some F_cell. If dev stays within noise and E_cell does not move, intermediate targets do not transfer to the final-frame mapping at this data scale (a clear negative). If E_cell drops, the extra text/target format interferes.
++Small effect, roughly 0 to +0.04 dev (F_cell / F_transform on both tasks), more likely neutral than c001's drop since all targets are final and half the context rows are removed early. If dev stays <= baseline-0.05 the context also interferes (the ViT image/text difference at train vs test); if it improves F_transform on move, the process transfers across tasks.
+--- c001/memory.md
++++ c002/memory.md
+@@ -1 +1,2 @@
+-c001: subgoal frame 26 rows (8/16) until step 70, then final only. Check E_cell, loss_by_target, gen probe at 49 vs 99.
++c001 (subgoal targets, frame 26): dev 0.343 vs 0.391, WORSE (F_missing up). Non-final targets dilute final mapping.
++c002: ctx frame 27 as ViT context on 8/16 rows until step 60, all targets final. Check ctx vs plain loss gap and gen probes.

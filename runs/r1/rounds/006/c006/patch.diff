@@ -1,0 +1,68 @@
+--- c005/databuilder.py
++++ c006/databuilder.py
+@@ -1,6 +1,6 @@
+-"""c005: mid-rescale target rows. Every step: 10 plain final rows (eval_format) + 6 rows whose target is a frame
+-inside the F rescaling phase (frames 40..47: F present, still changing size), template 'late'. Seeded streams;
+-no context frames; same schedule for all 100 steps. (c004 used settled frames 50..57 and was baseline-neutral.)
++"""c006: higher dose of c005. Every step: 8 plain final rows (eval_format, the allowed minimum) + 8 rows whose target
++is a frame inside the F rescaling phase (frames 36..48: F present, changing size), template 'late'. Seeded streams;
++no context frames; same schedule for all 100 steps. (c005: 6 rows, frames 40..47: dev 0.4005.)
+ """
+ import random
+ 
+@@ -9,9 +9,9 @@
+     def __init__(self, config, pool, seed, total_steps):
+         self.ids = [c["clip_id"] for c in pool["clips"]]
+         self.seed = seed
+-        self.n_late = int(config.get("n_late", 6))
+-        self.lo = int(config.get("late_lo", 40))
+-        self.hi = int(config.get("late_hi", 47))
++        self.n_late = int(config.get("n_late", 8))
++        self.lo = int(config.get("late_lo", 36))
++        self.hi = int(config.get("late_hi", 48))
+         self.pos = {"f": 0, "s": 0}
+ 
+     def _perm(self, kind, k):
+--- c005/candidate.yaml
++++ c006/candidate.yaml
+@@ -1,3 +1,3 @@
+ declared_class: static
+-builder: {n_late: 6, late_lo: 40, late_hi: 47}
+-analysis: {sub_frame: 44}
++builder: {n_late: 8, late_lo: 36, late_hi: 48}
++analysis: {sub_frame: 42}
+--- c005/proposal.md
++++ c006/proposal.md
+@@ -1,18 +1,18 @@
+-# c005 — mid-rescale frames (40-47) as extra targets, 6 of 16 rows, all 100 steps
++# c006 — dose increase of the mid-rescale target rows (8 of 16, frames 36-48)
+ 
+-Started from c004's /work copy (same structure, different target-frame range).
++Started from c005's /work copy; same mechanism, larger dose and a wider frame range.
+ 
+ ## Evidence
+-Baseline 0.391. c004 (6/16 rows target settled frames 50-57, other 10 plain): 0.3913, D +0.005 CI [-0.020, +0.031]; move 0.392 (-0.003), scale 0.391 (+0.012); sub-scores move E_cell 0.580, F_cell 0.328, F_transform 0.230 (baseline 0.639/0.349/0.181), scale F_cell 0.153 (baseline 0.116), F_transform 0.597 (0.577). So diverting 6 rows into a different template is harmless as long as the target content is F-present/final-like. Earlier programs with F-absent targets (c001 0.343, c003 0.350) or an F-absent context (c002 0.297) were worse: F_missing went up (c001 move 14, scale 11; baseline 8 / 1; c004 8 / 2). Items: dev_move_000 (0.519 baseline c000, 0.0 in c001), dev_move_003 (0.644 -> 0.35 in c001), dev_move_001 (baseline mean 0.295, 0.0 in c001), all rows where E/F content was wrong after F-absent supervision. c004's probe: generate score 0.355 at step 49, comparable to the baseline-like end level.
++Baseline 0.391. c005 (6/16 rows target frames 40-47, rest plain final): 0.4005, D +0.014 CI [-0.014, +0.042] — within noise overall, but the direction of the sub-scores is consistent with the mechanism: scale F_cell 0.187 vs 0.116 baseline (and 0.153 for c004), F_missing 1 on scale (baseline 1), move E_cell 0.601 / F_cell 0.345 / F_transform 0.214 (baseline 0.639 / 0.349 / 0.181), move F_transform up. c004 (settled frames 50-57): 0.3913. F-absent targets/context (c001 0.343, c003 0.350, c002 0.297) were clearly worse (F_missing up). The generate probe at step 49 was 0.396 in c005 vs 0.355 in c004 and 0.163 in c001/c003 at comparable stages. Failure items remain dominated by the same cases: dev_move_002 (baseline mean 0.0337, essentially always failed, E_wrong_colour) and dev_move_006 (baseline 0.0, sd 0.0), while dev_move_007 (baseline 0.971) and dev_move_010 (0.981) are solved; the F-stage is where the gain would have to come from.
+ 
+ ## Hypothesis
+-The informative process content with F present is the rescaling trajectory (frames ~40-47: F at intermediate size between its start size and final size). Training to generate these states, with the description naming the size change, may link the size words to a continuum of F sizes and sharpen F_transform/F_cell on scale, and (via the generic "F derived from E by the rule" structure) possibly the move task. Because F is present and E is correct in these frames, the F_missing failure mode seen with E-only targets should not arise.
++If the F-present rescaling frames carry a real signal, a larger dose (8/16 rows, the allowed maximum of non-final rows) over a wider span of the rescale (frames 36-48, from F's first size to near its final size) should increase scale F_cell / F_transform and, if the signal transfers across tasks, also move F_cell. A dose-response (c004 -> c005 -> c006) is the cheapest check that c005's small gain is not noise; the confirmation stage will decide.
+ 
+ ## Program
+-databuilder.py: each step 10 plain final-frame eval_format rows + 6 `late`-template rows ({description} + "Generate {target_spec}.") with target_frame random in 40..47; independent seeded clip streams; no context. Static. Only the frame range differs from c004.
++databuilder.py: each step 8 plain final-frame eval_format rows + 8 `late`-template rows ({description} + "Generate {target_spec}.") with target_frame random in 36..48, independent seeded clip streams, no context. Static for 100 steps. Differences from c005: n_late 6 -> 8, range 40-47 -> 36-48.
+ 
+ ## What analysis.py measures
+-Windowed loss per template; loss probe every 20 steps for final vs frame-44 targets on 8 held-out clips; generate probes at 49 and 99 with the mean of each returned sub-score. Compare F-related probe sub-scores with c004 (step 49: 0.355; E 0.37, F 0.22, F_tr 0.54) and the F_missing share in the dev error categories.
++Windowed loss per template; loss probe every 20 steps for final vs frame-42 targets on 8 held-out clips; generate probes at 49 and 99 with mean of each returned sub-score. Compare the step-49 probe with c005 (0.396; E 0.49, F 0.22, F_tr 0.54) and the dev F_missing count.
+ 
+ ## Expected result
+-Scale F_transform +0.05 or more and F_cell +0.03; move unchanged to slightly better; dev 0.39-0.43. Refuted if F_missing rises (>= 10 on move) or dev < 0.36, which would mean any non-final F states confuse the generated final size.
++Dev 0.40-0.44 (scale F_cell >= 0.2, F_transform >= 0.6; move unchanged to +0.03). Refuted if dev < 0.38 or F_missing >= 6 on scale, which would mean the dose starts to dilute the final mapping or wide-range frames near the F start confuse the final size.
+--- c005/memory.md
++++ c006/memory.md
+@@ -1,2 +1,2 @@
+-c001 0.343, c002 0.297, c003 0.350 (F-absent content hurts); c004 0.391 (settled frames 50-57, neutral = baseline).
+-c005: mid-rescale frames 40-47 as targets on 6/16 rows (F present, size changing).
++c001 0.343, c002 0.297, c003 0.350 (F-absent hurts); c004 0.391 (frames 50-57 neutral); c005 0.4005 (frames 40-47, 6 rows, scale F_cell up).
++c006: dose-up: 8 rows, frames 36-48.

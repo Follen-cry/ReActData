@@ -1,0 +1,3 @@
+declared_class: static
+builder: {n_late: 8, late_lo: 36, late_hi: 48}
+analysis: {sub_frame: 42}

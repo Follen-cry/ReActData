@@ -1,0 +1,7 @@
+{
+ "lr_used": 1.6666666666666667e-06,
+ "gen_weight": 0.5,
+ "grad_norm": 0.09733298420906067,
+ "param_delta_norm_8_tensors": 0.0014087391486441447,
+ "ok": true
+}

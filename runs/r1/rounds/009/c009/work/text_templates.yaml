@@ -1,0 +1,3 @@
+eval_format: "{wrapped_description}"
+late: "{description}\nGenerate {target_spec}."
+late_ctx: "{description}\nAn earlier frame of the same clip:\n{context_list}\nGenerate {target_spec}."

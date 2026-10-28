@@ -1,0 +1,32 @@
+{
+ "ok": true,
+ "returncode": 0,
+ "wall_s": 33.54283928871155,
+ "resumed_from": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "result": "I've written candidate c007 in `/work`. It hasn't been trained, since I can't run code here.\n\n**Evidence read:** `report.md` (the c006 entry) and the first 100 lines of `analysis_traces/c006.json`. I did not open `results.json`, the dev item files or the failure images this round. The `dev_move_*` figures in `proposal.md` are the baseline numbers from my earlier reads, not c006's.\n\n**What c006 showed:** it scored 0.4147 against the baseline's 0.391 (D +0.028, CI +0.001 to +0.057). That makes it the best so far, though the CI barely excludes zero. The dose-response held: c004 0.391, c005 0.4005, c006 0.4147. Scale E_cell rose to 0.643 from 0.522, and scale `E_wrong_colour` fell to 11 from 20. Scale F_transform fell to 0.501 from 0.577, and scale `F_missing` rose slightly to 4 from 1.\n\n**What c007 does:** the number of extra rows is already at the maximum, so this varies only which frames they target.\n- **Plain rows:** 8 of the 16 rows each step are plain final-frame rows, the allowed minimum.\n- **Extra rows:** the other 8 target a uniform random frame from 34 to 56, using the `late` template (\"{description} Generate {target_spec}.\"). That covers the whole F phase, from rescaling through the settled state.\n- **Changes from c006:** the range widens from 36\u201348 to 34\u201356. Nothing else changes.\n- **Schedule:** static over all 100 steps.\n\nThe range comes from the stated timeline, not the per-clip frame statistics.\n\n**What it tests:** whether including the settled frames restores scale F_transform while keeping the E-colour gain.\n\n**`analysis.py` logs:** per-template loss, a loss probe every 20 steps (final vs frame 45) on 8 held-out clips, and generate probes at steps 49 and 99.\n\n**Expected result:** dev 0.40 to 0.44, with scale F_transform back to 0.55 or higher. A dev score below 0.38 would mean the narrower c006 range works better.\n\n`proposal.md` and `memory.md` are updated.",
+ "model_usage": {
+  "claude-sonnet-5-5": {
+   "inputTokens": 60,
+   "outputTokens": 32457,
+   "thinkingTokens": 5679,
+   "cacheReadInputTokens": 1977477,
+   "cacheCreationInputTokens": 117783,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 117783,
+   "webSearchRequests": 0,
+   "costUSD": 0.9935697000000001,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "canonicalModel": "claude-sonnet-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "models": [
+  "claude-sonnet-5-5"
+ ],
+ "cost_usd": 0.9935697000000001,
+ "num_turns": 8,
+ "session_id": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "subtype": "success"
+}

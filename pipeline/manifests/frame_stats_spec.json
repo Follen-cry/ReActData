@@ -1,0 +1,5 @@
+{
+ "frame_change": "per t in 0..58: pixels of frame t+1 vs t (mp4, 256x256 INTER_AREA) whose max-channel |diff| > 40",
+ "fg_area": "per frame: pixels whose BGR L2 distance from the border-median background > 25",
+ "code_sha256": "8467f6a6a4019d23d2a28142790623d37b4c68b79e568bf04cb75a042c64d3c0"
+}

@@ -1,0 +1,32 @@
+{
+ "ok": true,
+ "returncode": 0,
+ "wall_s": 32.35483646392822,
+ "resumed_from": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "result": "I've written candidate c006 in `/work`. It hasn't been trained, since I can't run code here.\n\n**Evidence read:** `report.md` (the c005 entry) and the first 100 lines of `analysis_traces/c005.json`. I did not open `results.json`, the dev item files or the failure images this round. The dev item ids in `proposal.md` (`dev_move_002`, `_006`, `_007`, `_010`) come from the baseline numbers I read earlier, not from `c005.json`.\n\n**What c005 showed:** it scored 0.4005 against the baseline's 0.391 (D +0.014, CI \u22120.014 to +0.042), which is within noise. The sub-scores lean the way the mechanism predicts. Scale F_cell was 0.187 against 0.116 for the baseline, and `F_missing` stayed at 1 on scale. The step-49 generate probe scored 0.396, against 0.355 for c004 and 0.163 for the F-absent runs. All of that comes from single runs.\n\n**What c006 does:** it is a larger dose of the same idea.\n- **Plain rows:** 8 of the 16 rows each step are plain final-frame rows. That is the minimum allowed.\n- **Extra rows:** the other 8 target a random frame from 36 to 48, using the `late` template (\"{description} Generate {target_spec}.\").\n- **Changes from c005:** 8 extra rows instead of 6, and a wider frame range (36\u201348 instead of 40\u201347).\n- **Schedule:** static over all 100 steps.\n\nThe 36\u201348 range comes from the stated timeline, not from the per-clip frame statistics.\n\n**What it tests:** whether the gain grows with dose (c004, then c005, then c006). That is the cheapest check that c005's small lift isn't noise.\n\n**`analysis.py` logs:** per-template loss, a loss probe every 20 steps (final vs frame 42) on 8 held-out clips, and generate probes at steps 49 and 99.\n\n**Expected result:** dev 0.40 to 0.44. A dev score below 0.38, or `F_missing` at 6 or more on scale, would mean the larger dose dilutes the final-frame mapping.\n\n`proposal.md` and `memory.md` are updated.",
+ "model_usage": {
+  "claude-sonnet-5-5": {
+   "inputTokens": 54,
+   "outputTokens": 28856,
+   "thinkingTokens": 5155,
+   "cacheReadInputTokens": 1657530,
+   "cacheCreationInputTokens": 110113,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 110113,
+   "webSearchRequests": 0,
+   "costUSD": 0.894873,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "canonicalModel": "claude-sonnet-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "models": [
+  "claude-sonnet-5-5"
+ ],
+ "cost_usd": 0.894873,
+ "num_turns": 8,
+ "session_id": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "subtype": "success"
+}

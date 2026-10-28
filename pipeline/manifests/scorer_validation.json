@@ -1,0 +1,200 @@
+{
+ "version": "analogy_grid v1.0",
+ "tasks": {
+  "shape_color_then_scale": {
+   "n": 30,
+   "cases": {
+    "gt": {
+     "total": 1.0,
+     "E_cell": 1.0,
+     "F_cell": 1.0,
+     "F_transform": 1.0,
+     "min_total": 1.0,
+     "max_total": 1.0
+    },
+    "copy_input": {
+     "total": 0.0,
+     "E_cell": 0.0,
+     "F_cell": 0.0,
+     "F_transform": 0.0,
+     "min_total": 0.0,
+     "max_total": 0.0
+    },
+    "no_transform": {
+     "total": 0.355,
+     "E_cell": 1.0,
+     "F_cell": 0.012,
+     "F_transform": 0.0,
+     "min_total": 0.35,
+     "max_total": 0.388
+    },
+    "wrong_colour": {
+     "total": 0.242,
+     "E_cell": 0.033,
+     "F_cell": 0.033,
+     "F_transform": 0.867,
+     "min_total": 0.0,
+     "max_total": 1.0
+    },
+    "wrong_direction": {
+     "total": 0.338,
+     "E_cell": 0.967,
+     "F_cell": 0.0,
+     "F_transform": 0.0,
+     "min_total": 0.0,
+     "max_total": 0.35
+    },
+    "missing_F": {
+     "total": 0.35,
+     "E_cell": 1.0,
+     "F_cell": 0.0,
+     "F_transform": 0.0,
+     "min_total": 0.35,
+     "max_total": 0.35
+    },
+    "top_destroyed": {
+     "total": 0.0,
+     "E_cell": 0.0,
+     "F_cell": 0.0,
+     "F_transform": 0.0,
+     "min_total": 0.0,
+     "max_total": 0.0
+    },
+    "blank": {
+     "total": 0.0,
+     "E_cell": 0.0,
+     "F_cell": 0.0,
+     "F_transform": 0.0,
+     "min_total": 0.0,
+     "max_total": 0.0
+    },
+    "bg_repaint": {
+     "total": 0.15,
+     "E_cell": 0.15,
+     "F_cell": 0.15,
+     "F_transform": 0.15,
+     "min_total": 0.15,
+     "max_total": 0.15
+    }
+   },
+   "excluded_as_not_an_error": {
+    "no_transform / wrong_direction (move offset 0)": 0,
+    "wrong_colour (colour change dE <= 25, below the colour tolerance)": 1
+   },
+   "checks": {
+    "gt_mean>=0.95": true,
+    "gt_min>=0.85": true,
+    "copy_max<=0.02": true,
+    "no_transform: F_transform mean<=0.1 (cases with a real transform)": true,
+    "no_transform total < gt total - 0.25": true,
+    "wrong_colour (valid cases): E_cell=F_cell=0": true,
+    "wrong_direction (valid cases): F_transform mean<=0.1": true,
+    "missing_F: F_cell=F_transform=0": true,
+    "missing_F: E_cell kept >=0.9": true,
+    "top_destroyed total<=0.05": true,
+    "blank total==0": true,
+    "bg_repaint total<=0.15": true,
+    "ordering gt > wrong_direction, no_transform, missing_F > copy": true
+   }
+  },
+  "shape_color_then_move": {
+   "n": 30,
+   "cases": {
+    "gt": {
+     "total": 1.0,
+     "E_cell": 1.0,
+     "F_cell": 1.0,
+     "F_transform": 1.0,
+     "min_total": 1.0,
+     "max_total": 1.0
+    },
+    "copy_input": {
+     "total": 0.0,
+     "E_cell": 0.0,
+     "F_cell": 0.0,
+     "F_transform": 0.0,
+     "min_total": 0.0,
+     "max_total": 0.0,
+     "old_vbvr_customeval_move_scorer_total": 0.533
+    },
+    "no_transform": {
+     "total": 0.589,
+     "E_cell": 1.0,
+     "F_cell": 0.515,
+     "F_transform": 0.133,
+     "min_total": 0.35,
+     "max_total": 1.0
+    },
+    "wrong_colour": {
+     "total": 0.267,
+     "E_cell": 0.067,
+     "F_cell": 0.067,
+     "F_transform": 0.867,
+     "min_total": 0.0,
+     "max_total": 1.0
+    },
+    "wrong_direction": {
+     "total": 0.492,
+     "E_cell": 1.0,
+     "F_cell": 0.272,
+     "F_transform": 0.133,
+     "min_total": 0.35,
+     "max_total": 1.0
+    },
+    "missing_F": {
+     "total": 0.35,
+     "E_cell": 1.0,
+     "F_cell": 0.0,
+     "F_transform": 0.0,
+     "min_total": 0.35,
+     "max_total": 0.35
+    },
+    "top_destroyed": {
+     "total": 0.0,
+     "E_cell": 0.0,
+     "F_cell": 0.0,
+     "F_transform": 0.0,
+     "min_total": 0.0,
+     "max_total": 0.0
+    },
+    "blank": {
+     "total": 0.0,
+     "E_cell": 0.0,
+     "F_cell": 0.0,
+     "F_transform": 0.0,
+     "min_total": 0.0,
+     "max_total": 0.0
+    },
+    "bg_repaint": {
+     "total": 0.15,
+     "E_cell": 0.15,
+     "F_cell": 0.15,
+     "F_transform": 0.15,
+     "min_total": 0.15,
+     "max_total": 0.15
+    }
+   },
+   "excluded_as_not_an_error": {
+    "no_transform / wrong_direction (move offset 0)": 4,
+    "wrong_colour (colour change dE <= 25, below the colour tolerance)": 2
+   },
+   "checks": {
+    "gt_mean>=0.95": true,
+    "gt_min>=0.85": true,
+    "copy_max<=0.02": true,
+    "no_transform: F_transform mean<=0.1 (cases with a real transform)": true,
+    "no_transform total < gt total - 0.25": true,
+    "wrong_colour (valid cases): E_cell=F_cell=0": true,
+    "wrong_direction (valid cases): F_transform mean<=0.1": true,
+    "missing_F: F_cell=F_transform=0": true,
+    "missing_F: E_cell kept >=0.9": true,
+    "top_destroyed total<=0.05": true,
+    "blank total==0": true,
+    "bg_repaint total<=0.15": true,
+    "ordering gt > wrong_direction, no_transform, missing_F > copy": true
+   }
+  }
+ },
+ "all_passed": true,
+ "failures": []
+}

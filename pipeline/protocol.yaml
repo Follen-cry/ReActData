@@ -1,0 +1,98 @@
+# reactdata-v5 protocol (2026-10-27). Flow and rules of reactdata-v4 (agent-chosen target frames, design-v3 noise-aware
+# selection, serial 10 x 1, lineage, config-only duplicates) with these changes (researcher decisions):
+#   * screening D is computed against the per-item mean of the baseline replicates (v4 compared with the single
+#     seed-1000 baseline run, a low draw that inflated every screening D);
+#   * the training pool is 16 clips (data-scarce: ~100 uses per clip for final-frame rows only);
+#   * the training pool stays shape_color_then_scale only: whether process videos teach a rule that transfers to the
+#     move task is part of the question;
+#   * the Builder Agent must read the complete results (results.json, per-item dev results, its analysis traces)
+#     before proposing; proposal.md has required sections and cites >= 3 dev items (checked mechanically).
+# Fresh run: nothing inherited.
+version: 5
+design: v3
+experiment: reactdata-v5
+model_init: InternVL-U snapshot f012d760, LoRA init seed 42 for every arm
+
+data:
+  train_pool: {task: shape_color_then_scale, n: 16, selection: "stratified over the 12 (scale_from, scale_to), seed 20261028, from the reactdata-v4 pool", rows_per_run: 1600}
+  frames: "F0 / final target from PNG endpoints; context frames and earlier targets from per-clip colour-corrected mp4 frames (frame-59 MAE vs PNG 3.61 -> 0.13)"
+  dev: "manifests/dev.jsonl (50 scale + 50 move; equal-weight task means)"
+  test: "manifests/test.jsonl (100 move); evaluated before in reactdata-v1 r1 (Base and one fixed-baseline run at 1,600 clips)"
+targets:
+  agent_chooses_target_frame: true
+  range: "1..59 (59 = final, default)"
+  context_before_target: true
+  min_final_rows_per_step: 8
+  text: "non-final rows: template with {target_spec}, without {wrapped_description}"
+
+training:
+  config: configs/train.yaml
+  max_steps: 100
+  global_batch: 16
+  gpus_per_run: 4
+  checkpoint_every: 50
+  screen_seed: 1000                    # every candidate's screening run and baseline replicate 0
+
+noise:                                 # P1: baseline replicates differing only in the run seed (data order, per-row noise)
+  baseline_seeds: [1000, 1001, 1002, 1003, 1004]
+  sd_train: "std of the replicates' dev scores; delta = sd_train (one run's noise); shown to the Builder Agent"
+
+evaluation:
+  dev: manifests/dev.jsonl
+  test: manifests/test.jsonl
+  S: [0]                               # one generation seed: generation noise (SE ~0.007) << training noise (sd ~0.02)
+  bootstrap: {B: 10000, seed: 20261025, unit: datapoint, stratified_by: task}
+
+search:                                # screening: one run per candidate (screen_seed), dev with S
+  max_agent_candidates: 10
+  rounds: 10
+  candidates_per_round: 1              # serial: every candidate sees every earlier result
+  screen_reference: replicate_mean    # screening D = candidate - per-item mean of the baseline replicates
+  proposal:
+    sections: ["Evidence", "Hypothesis", "Program", "What analysis.py measures", "Expected result"]
+    min_item_refs: 3
+  workspace_start: latest_valid        # the agent's most recent valid candidate (iterative lineage); c000 first
+  config_only_is_duplicate: true       # identical databuilder.py / analysis.py / text_templates.yaml -> duplicate (salt-only replicates are the Runner's job)
+  agent:
+    cli: "claude -p --model sonnet"
+    tools: [Read, Edit, Write]
+    timeout_s: 1800
+    max_turns: 80
+    session: resume_chain
+    instructions: BUILDER_AGENT_v5.md
+  agent_retry: 1
+  repair_rounds: 1
+  train_infra_retry: 1
+  stop_after_consecutive_rejects: 3
+  stop_rules: "max candidates, wall budget, consecutive rejects; no plateau rule"
+
+confirm:                               # after the search: the top_k screening candidates by single-run D
+  top_k: 3
+  seeds: [1001, 1002, 1003, 1004]      # same seeds as baseline replicates 1-4 (paired by seed); the screening run is not reused
+  statistic: "D = mean over seeds of (cand - base); SE^2 = 2 sd_train^2 / R + SE_item^2; Bonferroni over top_k (z = 2.39 at alpha 0.05, k 3)"
+
+selection:
+  rule: "among confirmed candidates with D >= delta and CI lower bound > 0, the one with the largest D; otherwise the fixed baseline"
+  dev_ci_is_confirmatory: false        # dev is still the selection set; the test of P3 is the independent evaluation
+
+final:                                 # P3: formal retraining of the selected program and the baseline on the same seeds
+  formal_seeds: [2000, 2001, 2002]
+  test_S: [0]
+  compare: "same statistic as confirm (SE_train from sd_train, m = 1)"
+
+budget:
+  wall_hours: 8                        # researcher decision: <= 8 h
+  reserve_final_hours: 3.2             # confirmation (~1.7 h) + P3 (~1.1 h) + margin
+  buffer_hours: 0.3
+  max_gpus: 8
+  disk_gb: 60
+  max_concurrent_jobs: 2              # 2 x 4 GPUs = the 8-GPU limit; any idle slot of the pool below is used
+  slots:                               # pool of 4-GPU slots (shared cluster: occupancy changes during a run)
+    - {name: A, node: torrnode15, gpus: "4,5,6,7", port: 29781}
+    - {name: B, node: torrnode11, gpus: "0,1,2,3", port: 29782}
+    - {name: C, node: torrnode15, gpus: "0,1,2,3", port: 29783}
+    - {name: D, node: torrnode14, gpus: "4,5,6,7", port: 29784}   # torrnode14 GPU 3 is flaky: never used
+  estimate: "P1 ~0.85 h (6 jobs / 2 slots), search ~3.0 h (10 x ~17 min, serial), confirm ~1.7 h (12 jobs), P3 ~1.1 h (7 jobs): ~6.7 h"
+
+probes: {limits: "api/plugin_api.py, unchanged"}
+audit: {quantity: "final-frame foreground area quartile conditional on (scale_from, scale_to)", flag: "p < 0.001 and CMI > 0.02 bits -> reject"}

@@ -1,0 +1,32 @@
+{
+ "ok": true,
+ "returncode": 0,
+ "wall_s": 28.262014627456665,
+ "resumed_from": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "result": "I fixed the error in `/work/analysis.py`. I haven't re-run the Runner's checks.\n\nThe generate-probe code in `update` assumed the sub-score keys were `E_cell`, `F_cell` and `F_transform`. The Runner's simulation returned different keys, which caused the `KeyError: 'E_cell'`. `plugin_api.py` lists `rotation_angle`, `position_alignment` and `shape_fidelity`, so the probe keys differ from the dev sub-scores. The code now takes whatever keys the probe returns and averages each one over the probe clips. A missing value counts as 0.\n\nThe idea is unchanged: frame 27 as ViT-only context on half the rows until step 60, with every target the final frame.\n\nThe generate-probe averages in `analysis_traces` will now be named after those probe keys, not E/F/F_transform. I didn't touch the other files. `proposal.md` still says the probe logs E_cell, F_cell and F_transform, so it doesn't match what `analysis.py` now writes.",
+ "model_usage": {
+  "claude-sonnet-5-5": {
+   "inputTokens": 24,
+   "outputTokens": 11451,
+   "thinkingTokens": 1640,
+   "cacheReadInputTokens": 430643,
+   "cacheCreationInputTokens": 68199,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 68199,
+   "webSearchRequests": 0,
+   "costUSD": 0.4304183,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "canonicalModel": "claude-sonnet-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "models": [
+  "claude-sonnet-5-5"
+ ],
+ "cost_usd": 0.4304183,
+ "num_turns": 2,
+ "session_id": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "subtype": "success"
+}

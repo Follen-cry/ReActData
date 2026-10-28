@@ -1,0 +1,3 @@
+declared_class: schedule
+builder: {ctx_until: 60, ctx_frame: 27, n_ctx: 8}
+analysis: {ctx_frame: 27}

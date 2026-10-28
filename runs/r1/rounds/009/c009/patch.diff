@@ -1,0 +1,92 @@
+--- c008/databuilder.py
++++ c009/databuilder.py
+@@ -1,6 +1,5 @@
+-"""c008: c006/c007-style process rows (8 plain final rows + 8 process rows per step, target in the F phase), where 4
+-of the 8 process rows additionally show an earlier F-present frame (34..42) as ViT-only context and target a later
+-frame (>= ctx+4, up to 56). Final rows never have context, so the test-time mapping stays exactly as in the baseline.
++"""c009: c006 process rows (8 plain final rows + 8 rows per step targeting an F-rescaling frame 36..48, template
++'late', no context) until step proc_until, then 16 plain final rows so the run ends on the pure test-time format.
+ """
+ import random
+ 
+@@ -10,12 +9,9 @@
+         self.ids = [c["clip_id"] for c in pool["clips"]]
+         self.seed = seed
+         self.n_proc = int(config.get("n_proc", 8))
+-        self.n_ctx = int(config.get("n_ctx", 4))
++        self.proc_until = int(config.get("proc_until", 75))
+         self.lo = int(config.get("late_lo", 36))
+-        self.hi = int(config.get("late_hi", 52))
+-        self.ctx_lo = int(config.get("ctx_lo", 34))
+-        self.ctx_hi = int(config.get("ctx_hi", 42))
+-        self.gap = int(config.get("gap", 4))
++        self.hi = int(config.get("late_hi", 48))
+         self.pos = {"f": 0, "s": 0}
+ 
+     def _perm(self, kind, k):
+@@ -32,17 +28,11 @@
+         return out
+ 
+     def next_batch(self, step):
++        n = self.n_proc if step < self.proc_until else 0
+         rng = random.Random(f"{self.seed}:proc:{step}")
+-        rows = [{"clip_id": c, "context_frames": [], "template_id": "eval_format"}
+-                for c in self._take("f", 16 - self.n_proc)]
+-        for j, c in enumerate(self._take("s", self.n_proc)):
+-            if j < self.n_ctx:
+-                cf = rng.randint(self.ctx_lo, self.ctx_hi)
+-                tf = rng.randint(cf + self.gap, max(cf + self.gap, self.hi + 4))
+-                rows.append({"clip_id": c, "context_frames": [cf], "template_id": "late_ctx", "target_frame": min(tf, 56)})
+-            else:
+-                rows.append({"clip_id": c, "context_frames": [], "template_id": "late",
+-                             "target_frame": rng.randint(self.lo, self.hi)})
++        rows = [{"clip_id": c, "context_frames": [], "template_id": "eval_format"} for c in self._take("f", 16 - n)]
++        rows += [{"clip_id": c, "context_frames": [], "template_id": "late", "target_frame": rng.randint(self.lo, self.hi)}
++                 for c in self._take("s", n)]
+         random.Random(f"{self.seed}:mix:{step}").shuffle(rows)
+         return rows
+ 
+--- c008/candidate.yaml
++++ c009/candidate.yaml
+@@ -1,3 +1,3 @@
+-declared_class: static
+-builder: {n_proc: 8, n_ctx: 4, late_lo: 36, late_hi: 52, ctx_lo: 34, ctx_hi: 42, gap: 4}
+-analysis: {sub_frame: 45, ctx_frame: 38}
++declared_class: schedule
++builder: {n_proc: 8, proc_until: 75, late_lo: 36, late_hi: 48}
++analysis: {sub_frame: 42, ctx_frame: 38}
+--- c008/proposal.md
++++ c009/proposal.md
+@@ -1,18 +1,18 @@
+-# c008 — c006-style process rows, half of them conditioned on an earlier F-present frame
++# c009 — c006 process rows, removed for the last 25 steps
+ 
+-Started from c007's /work copy (same 8 plain + 8 process-row structure); added ViT-only context on 4 of the 8 process rows.
++Started from c008's /work copy; dropped the context rows (they helped scale but not move) and returned to the c006 mix with a schedule.
+ 
+ ## Evidence
+-Baseline 0.391. Process-row dose/coverage series: c004 (6 rows, frames 50-57) 0.3913; c005 (6, 40-47) 0.4005; c006 (8, 36-48) 0.4147 (D +0.028 CI [+0.001, +0.057]); c007 (8, 34-56) 0.4043 (D +0.018 CI [-0.007, +0.044]; move 0.4152, scale 0.3933). So F-present process targets give a stable but small gain of about +0.02, mostly in scale E_cell (0.641-0.643 vs 0.522 baseline) and fewer E_wrong_colour on scale (10-11 vs 20), while scale F_cell (0.113 / 0.151 vs 0.116) and F_transform (0.495 / 0.501 vs 0.577) did not improve; move changes: E_cell 0.641, F_cell 0.362, F_transform 0.185 vs 0.639 / 0.349 / 0.181 — flat. Widening to settled frames in c007 did not restore F_transform. The F-geometry remains the failure: items dev_move_000 (0.4195 baseline mean, sd 0.094), dev_move_003 (0.409, sd 0.13) and dev_move_001 (0.295, sd 0.18) fail through F_wrong / F_wrong_transform (33 of 50 move items in c007), while dev_move_007 (0.971) and dev_move_010 (0.981) are solved. Single-frame targets teach what a state looks like but not the *transition* of F; the F-absent context hurt earlier (c002 0.297), the F-present case is untested.
++Baseline 0.391 (move 0.408, scale 0.373). The final test is move only. Process-row series: c006 (8 rows, frames 36-48, no ctx, all steps) 0.4147, move 0.4187, scale 0.4108; c007 (34-56) 0.4043, move 0.4152; c008 (c006-like + 4 context-conditioned rows) 0.4099 but move 0.3776 (-0.017 vs baseline CI [-0.041, +0.008]; move F_cell 0.284 vs 0.349 baseline and 0.361 in c006) and scale 0.4423 (+0.064 CI [+0.017, +0.111]; E_cell 0.704, F_transform 0.532). So the context rows specialise to the training task's scale trajectory and hurt F placement on the cross-task move set, whereas context-free F-present targets (c006/c007) gave move +0.02 (move F_cell 0.361/0.362). Items: dev_move_003 (baseline 0.409, sd 0.13), dev_move_000 (0.4195, sd 0.094), dev_move_001 (0.295, sd 0.18) are the high-variance items driving move; F_wrong_transform stays at 33 of 50 in every program (c006, c007, c008), i.e. the F-move itself is never learned from scale-only videos. c008's loss probes show late_ctx loss ~ equal to late loss, so context is not simply copied.
+ 
+ ## Hypothesis
+-Conditioning a later process frame on an earlier F-present frame of the same clip (frame 34-42 as context, target >= 4 frames later, up to 56) trains the model to extrapolate F's own trajectory (size change applied to an existing F), the part of the rule the single-frame targets did not improve (F_transform). Final-frame rows stay context-free, so the test-time format is untouched, and the other 4 process rows keep the c006 content. The context is given only where F is present, avoiding the F-absent confusion of c002.
++Because the test is the final-frame mapping on move, the end of training should be pure test-time rows. In c006 the last 25 steps still had 8 of 16 rows on process frames. Dropping the process rows after step 75 keeps the early/middle regularising effect (E-colour gain, less memorisation of the 16 exact final images) while letting the last updates fit the exact final mapping; this is the "schedule that removes them before the end" lever from the task description. Expected to retain the E_cell gain and perhaps lift F_cell/F_transform on move slightly.
+ 
+ ## Program
+-databuilder.py: per step 8 plain eval_format final rows; 4 `late` rows (target uniform 36..52, no context); 4 `late_ctx` rows (context frame uniform 34..42, target uniform in [ctx+4, 56], template with {context_list} and {target_spec}, no {wrapped_description}). Independent seeded clip streams, static for all 100 steps, max 20 input images per step. Declared static.
++databuilder.py: steps 0-74: 8 plain eval_format final rows + 8 `late` rows (target uniform 36..48, no context); steps 75-99: 16 plain final rows. Seeded independent clip streams. Declared schedule.
+ 
+ ## What analysis.py measures
+-Windowed loss per template (eval_format / late / late_ctx — if late_ctx loss is far below late loss the context is being copied); loss probe every 20 steps on 8 held-out clips for final, frame-45 plain, and frame-50-with-ctx-38; generate probes at 49 and 99 (plain F0 -> final) with mean of every sub-score returned. Compare the step-99 probe to c006/c007.
++Windowed loss per template; loss probes every 20 steps (final vs frame-42 plain vs ctx probe for continuity); generate probes at 49 and 99 with mean of each returned sub-score; compare step-99 generation with c006 and the dev move/scale sub-scores.
+ 
+ ## Expected result
+-Scale F_transform >= 0.55 and dev 0.41-0.45 (primarily via scale; move +0.02 to +0.04 if the trajectory knowledge transfers). Refuted if dev <= 0.40 (no gain over c006/c007) or if F_missing/blank outputs rise (context copying), in which case the remaining budget should go to c006-like programs.
++Dev 0.40-0.43; move 0.41-0.44 (c006 0.419), scale ~0.40. Refuted if dev < 0.39 (the late process rows were part of the benefit) — in that case the final choice should prefer c006's constant mix.
+--- c008/memory.md
++++ c009/memory.md
+@@ -1,2 +1,2 @@
+-c001 0.343, c002 0.297, c003 0.350 (F-absent hurts); c004 0.391; c005 0.4005; c006 0.4147 (best); c007 0.4043 (wider range, no extra gain).
+-c008: half of process rows get an earlier F-present context frame (34-42) -> later target; final rows context-free.
++c004 0.391; c005 0.4005; c006 0.4147 (move 0.419, best for move); c007 0.4043; c008 0.4099 (ctx rows: scale 0.442 but move 0.378).
++c009: c006 mix until step 75 then 16 plain rows. Test = move only, so prefer move sub-score.

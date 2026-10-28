@@ -1,0 +1,31 @@
+# reactdata-v1: N0 recipe (aligned inference settings), 512 area grid, 100 steps, unified schedule (same definition as v0).
+# Rows come from the candidate's databuilder through runner/train_entry.py; data.train_meta (N0's) is only read for
+# the ViT tile budget (one 448^2 tile per image: dynamic_image_size false).
+# lr: 6-step linear warmup counted from 1 (lr_k = peak*(k+1)/6), then cosine to the last step -- built by train_entry.py
+# (optim.warmup_ratio / optim.scheduler below are not used). Generation loss weight constant 0.5 (gen_warmup_steps 0).
+extends: ../../../src/internvlu-train/configs/v3/N0.yaml
+name: reactdata-v1
+vars:
+  setting: reactdata
+gen_image:
+  size: 512
+  resize_mode: area
+loss:
+  gen_warmup_steps: 0
+train:
+  max_steps: 100
+  seed: 42                 # LoRA / model init seed: identical for every arm (common initialization)
+eval:
+  sets: []
+  at_start: false
+  diffusion_steps: 20
+  all_cfg_scale: 4.5
+  part_cfg_scale: 2.0
+checkpoint:
+  every_steps: 25
+  keep_last: 1
+  resume: auto
+  export_at_end: false
+tracking:
+  backends: [jsonl]
+  project: reactdata-v1

@@ -1,0 +1,183 @@
+{
+ "md5_overlap": [],
+ "param_dup": [],
+ "thumb": {
+  "shape_color_then_scale": {
+   "within_split_nn_l1_p0.5": 0.134521484375,
+   "cross_split_below_thr": []
+  },
+  "shape_color_then_move": {
+   "within_split_nn_l1_p0.5": 0.693603515625,
+   "cross_split_below_thr": []
+  }
+ },
+ "generator": {
+  "train:shape_color_then_scale": [
+   [
+    4200000,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200001,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200002,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200003,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200004,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200005,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200006,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200007,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200008,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200009,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200010,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200011,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200012,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200013,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200014,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200015,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200016,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200017,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200018,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ],
+   [
+    4200019,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ]
+  ],
+  "probe:shape_color_then_scale": [
+   [
+    4200020,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ]
+  ],
+  "dev:shape_color_then_scale": [
+   [
+    4200021,
+    "9ca1707ab4f790ff09aa7a53cdc7a4c51236efa9"
+   ]
+  ],
+  "dev:shape_color_then_move": [
+   [
+    242,
+    "b700629738acf06ff11ff564e09711fe4edb7a48"
+   ]
+  ],
+  "test:shape_color_then_move": [
+   [
+    342,
+    "b700629738acf06ff11ff564e09711fe4edb7a48"
+   ]
+  ]
+ },
+ "usage_history": {
+  "ood": {
+   "known": [
+    "VBVR-CustomEval target_pred OOD eval split: scored for base / S0-S4 / later models",
+    "eval/vbvr4 (v4 suite)",
+    "calibration of the VBVR-CustomEval shape_color_then_move scorer (not the reactdata-v1 scorer)"
+   ],
+   "referencing_files": [
+    "/scratch/network/ssd2/junlin/ssl_mllm/Evaluation/VBVR-CustomEval/judge_eval/full_judge_examples.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/baseline_pipeline/.claude/worktrees/phystran-full-download/eval/suites/vbvr/judge_eval/full_judge_examples.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/baseline_pipeline/.claude/worktrees/vae-cond-exp/eval/suites/vbvr/judge_eval/full_judge_examples.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/baseline_pipeline/eval/suites/vbvr/judge_eval/full_judge_examples.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/data/datasets/vbvr_target_pred_ood/target_pred_ood_eval.jsonl",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/bagel/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/base_4task500sft/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/base_prescale512_vaecond/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/base_scm_only/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/from100k_9task4500/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/from140k_9task4500/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/frombase_9task4500/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/s0_4task500sft/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/s1_4task500sft/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/s2_4task500sft/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/s3_4task500sft/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/s4_4task500sft/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/sensenova/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/smoke_test/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/tp_scm_job1_zeroshot/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/tp_scm_job2_zeroshot/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/v4cmp_base/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/v4cmp_y0_final/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/v4cmp_y0_s20000/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/v4cmp_y0_s5000/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/vbvr-gen-noce_prescale512_vaecond/meta.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/results/vbvr_target_pred_eval/vbvr-gen-noce_smoketest/meta.json"
+   ]
+  },
+  "ood_train500": {
+   "known": [
+    "training data of the VBVR 9-task gen-SFT continuation of earlier, unrelated checkpoints; never used to train Base"
+   ],
+   "referencing_files": [
+    "/scratch/network/ssd2/junlin/ssl_mllm/Evaluation/VBVR-CustomEval/artifacts/gen_9task_sft_comparison.py",
+    "/scratch/network/ssd2/junlin/ssl_mllm/VBVR-DataGeneration/target_pred/vbvr_target_pred_build_ood_train.py",
+    "/scratch/network/ssd2/junlin/ssl_mllm/VBVR-DataGeneration/target_pred/vbvr_target_pred_generate_ood_train.py",
+    "/scratch/network/ssd2/junlin/ssl_mllm/baseline_pipeline/.claude/worktrees/phystran-full-download/data/v1/datasets/vbvr_target_pred_4task/target_pred_4task_train_no_ce.jsonl",
+    "/scratch/network/ssd2/junlin/ssl_mllm/baseline_pipeline/.claude/worktrees/phystran-full-download/eval/suites/vbvr/artifacts/gen_9task_sft_comparison.py",
+    "/scratch/network/ssd2/junlin/ssl_mllm/baseline_pipeline/.claude/worktrees/vae-cond-exp/data/v1/datasets/vbvr_target_pred_4task/target_pred_4task_train_no_ce.jsonl",
+    "/scratch/network/ssd2/junlin/ssl_mllm/baseline_pipeline/.claude/worktrees/vae-cond-exp/eval/suites/vbvr/artifacts/gen_9task_sft_comparison.py",
+    "/scratch/network/ssd2/junlin/ssl_mllm/baseline_pipeline/data/v1/datasets/vbvr_target_pred_4task/target_pred_4task_train_no_ce.jsonl",
+    "/scratch/network/ssd2/junlin/ssl_mllm/baseline_pipeline/eval/suites/vbvr/artifacts/gen_9task_sft_comparison.py",
+    "/scratch/network/ssd2/junlin/ssl_mllm/data/datasets/vbvr_target_pred_4task/target_pred_4task_train_no_ce.jsonl",
+    "/scratch/network/ssd2/junlin/ssl_mllm/data/datasets/vbvr_target_pred_9task/target_pred_9task_train_no_ce.jsonl",
+    "/scratch/network/ssd2/junlin/ssl_mllm/data/datasets/vbvr_target_pred_ood/build_summary_train.json",
+    "/scratch/network/ssd2/junlin/ssl_mllm/data/datasets/vbvr_target_pred_ood/target_pred_ood_train.jsonl"
+   ]
+  }
+ },
+ "generator_seed_overlap": {},
+ "dev_move_test_move_overlap_ids": [],
+ "isolation_ok": true
+}

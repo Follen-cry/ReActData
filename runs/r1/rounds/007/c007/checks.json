@@ -1,0 +1,41 @@
+{
+ "candidate": "/scratch/network/ssd/junlin/reactdata-v5/runs/r1/rounds/007/c007/work",
+ "errors": [],
+ "warnings": [],
+ "declared_class": "static",
+ "tested_behaviour": {
+  "steps_with_different_recipes_under_perturbed_signals": 0,
+  "early_vs_late_tv": {
+   "n_context": 0.0,
+   "context_bin": 0.0,
+   "template": 0.0,
+   "target_bin": 0.015
+  },
+  "tested_class": "static"
+ },
+ "class_label": "static",
+ "class_consistent": true,
+ "class_note": "diagnostic only: limited perturbation tests cannot prove program properties",
+ "sim_probe_requests": {
+  "loss": 10,
+  "generate": 2
+ },
+ "sim_stats": {
+  "rows": 3200,
+  "unique_clips": 16,
+  "vit_images": 3200,
+  "n_context": {
+   "0": 3200
+  },
+  "templates": {
+   "late": 1600,
+   "eval_format": 1600
+  },
+  "context_frame_bins_of_10": {},
+  "target_frame_bins_of_10": {
+   "3": 422,
+   "4": 674,
+   "5": 2104
+  }
+ }
+}

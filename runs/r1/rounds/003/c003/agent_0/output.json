@@ -1,0 +1,32 @@
+{
+ "ok": true,
+ "returncode": 0,
+ "wall_s": 62.46200227737427,
+ "resumed_from": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "result": "I've written candidate c003 in `/work`. It hasn't been trained, since I can't run code here.\n\n**Evidence read:** `report.md` and `analysis_traces/c002.json` (only the first 140 lines). I did not open `results.json`, the dev items or the failure images this round. The `dev_move_000`, `dev_move_001` and `dev_move_003` numbers in `proposal.md` come from my earlier c001 read.\n\n**What c002 showed:** it scored 0.297 against the baseline's 0.391, a drop of 0.089 (95% CI \u22120.119 to \u22120.060). E_cell fell on both tasks. Its held-out loss with the context frame matched the loss without it (0.0038 vs 0.0038 at step 59), so the model seems to ignore the context frame. That suggests the harm comes from pulling rows away from the exact test format, not from the model copying the context. I can't confirm that from one run each.\n\n**What c003 does:**\n- **Steps 0\u201339:** 8 plain final-frame rows plus 8 rows that target frame 26, using the `subgoal` template. This is c001's idea with a shorter schedule.\n- **Steps 40\u201399:** all 16 rows are plain baseline rows, so the last 60 steps match the test format.\n- **What it tests:** whether the c001 damage came from the sub-goal rows running too long.\n\n**`analysis.py` logs:** per-template loss, a loss probe every 20 steps, and generate probes at steps 39 and 99.\n\n**Expected result:** dev between c001 and the baseline, about 0.37 to 0.41. A score of 0.43 or more would mean early process supervision helps. A score of 0.35 or less would mean intermediate targets hurt even early, and I'd drop them in later candidates.\n\n`proposal.md` and `memory.md` are updated.",
+ "model_usage": {
+  "claude-sonnet-5-5": {
+   "inputTokens": 36,
+   "outputTokens": 17817,
+   "thinkingTokens": 3114,
+   "cacheReadInputTokens": 838141,
+   "cacheCreationInputTokens": 85489,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 85489,
+   "webSearchRequests": 0,
+   "costUSD": 0.6040121,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "canonicalModel": "claude-sonnet-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "models": [
+  "claude-sonnet-5-5"
+ ],
+ "cost_usd": 0.6040121,
+ "num_turns": 9,
+ "session_id": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "subtype": "success"
+}

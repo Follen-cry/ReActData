@@ -1,0 +1,22 @@
+{
+ "run_id": "formal_c000-s2002-g4",
+ "run_dir": "/scratch/network/ssd/junlin/reactdata-v5/runs/r1/jobs/formal_c000-s2002-g4",
+ "candidate_dir": "/scratch/network/ssd2/junlin/ssl_mllm/internvlu-exp/exp/reactdata-v5/seeds/fixed_f0_final",
+ "run_seed": 2002,
+ "steps": 100,
+ "evals": [
+  {
+   "name": "test",
+   "file": "/scratch/network/ssd2/junlin/ssl_mllm/internvlu-exp/exp/reactdata-v5/manifests/test.jsonl",
+   "seeds": [
+    0
+   ]
+  }
+ ],
+ "max_eval_rows": null,
+ "protocol_sha256": "27dbec46220140f86dee8816630cb92716a509f73c6b2ce5f34b25bafcbf2476",
+ "overrides": [
+  "checkpoint.every_steps=50"
+ ],
+ "gpus": 4
+}

@@ -1,0 +1,32 @@
+{
+ "ok": true,
+ "returncode": 0,
+ "wall_s": 20.501797437667847,
+ "resumed_from": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "result": "Candidate c002 is ready in `/work`. It's untested, since I can't run code here.\n\n`/input` holds the same results as before (only c000 and c001), and `/work` already contained the repaired c002 files. I kept them rather than inventing a new idea. I did not re-read `results.json`, the dev items or the analysis traces this time. I relied on my earlier reading of c001's results.\n\n**Idea:** c001 used the early E-state frame as a training target and scored 0.343 against the baseline's 0.391. Here every target is the final frame, and frame 27 is shown only as ViT context.\n- **Steps 0\u201359:** 8 of the 16 rows get that context frame, using the `ctx_final` template. The other 8 are plain baseline rows.\n- **Steps 60\u201399:** all rows are plain, so training ends on the test-time input.\n\n**Repair:** the earlier `KeyError: 'E_cell'` came from the generate-probe code in `analysis.py`. It now averages whatever sub-score keys the probe returns.\n\n**`proposal.md`:** I edited it to say the probe logs whatever sub-score keys come back, not E_cell/F_cell/F_transform.\n\n**Expected result:** roughly 0 to +0.04 on dev. It could also interfere again. A large gap between context-row and plain-row loss in `analysis.py` would mean the model is leaning on the context frame.",
+ "model_usage": {
+  "claude-sonnet-5-5": {
+   "inputTokens": 30,
+   "outputTokens": 12308,
+   "thinkingTokens": 1764,
+   "cacheReadInputTokens": 625570,
+   "cacheCreationInputTokens": 74299,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 74299,
+   "webSearchRequests": 0,
+   "costUSD": 0.48289299999999996,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "canonicalModel": "claude-sonnet-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "models": [
+  "claude-sonnet-5-5"
+ ],
+ "cost_usd": 0.48289299999999996,
+ "num_turns": 4,
+ "session_id": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "subtype": "success"
+}

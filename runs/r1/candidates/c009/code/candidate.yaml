@@ -1,0 +1,3 @@
+declared_class: schedule
+builder: {n_proc: 8, proc_until: 75, late_lo: 36, late_hi: 48}
+analysis: {sub_frame: 42, ctx_frame: 38}

@@ -1,0 +1,32 @@
+{
+ "ok": true,
+ "returncode": 0,
+ "wall_s": 36.6307430267334,
+ "resumed_from": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "result": "I've written candidate c009 in `/work`. It hasn't been trained, since I can't run code here.\n\n**Evidence read:** `report.md` (the c008 entry) and the first 100 lines of `analysis_traces/c008.json`. I did not open `results.json`, the dev item files or the failure images this round. The `dev_move_*` figures in `proposal.md` are baseline numbers from my earlier reads, not c008's.\n\n**What c008 showed:** it scored 0.4099 overall, but the two tasks went opposite ways.\n- **Scale:** 0.4423, which is +0.064 over the baseline with a CI of +0.017 to +0.111.\n- **Move:** 0.3776, which is \u22120.017 against the baseline, and move F_cell fell to 0.284 from 0.349.\n\nThe final test is move only, so the context rows look like a specialisation to the training task that hurts the cross-task set. That is my reading of single runs. c006 remains the best for move, at 0.4187.\n\n**What c009 does:** it drops the context rows and returns to c006's mix with a schedule.\n- **Steps 0\u201374:** 8 plain final-frame rows plus 8 rows targeting a random frame from 36 to 48, using the `late` template.\n- **Steps 75\u201399:** all 16 rows are plain final-frame rows, so training ends on the exact test format.\n\n**What it tests:** whether keeping process rows through the last 25 steps (as c006 did) helped or got in the way of fitting the final mapping.\n\n**`analysis.py` logs:** per-template loss, loss probes every 20 steps, and generate probes at steps 49 and 99. It still asks for a context-row probe item for continuity, even though c009 has no context rows.\n\n**Expected result:** dev 0.40 to 0.43, with move 0.41 to 0.44. A dev score below 0.39 would mean the late process rows were part of the benefit, and the final choice should prefer c006's constant mix.\n\n`proposal.md` and `memory.md` are updated.",
+ "model_usage": {
+  "claude-sonnet-5-5": {
+   "inputTokens": 76,
+   "outputTokens": 41133,
+   "thinkingTokens": 7160,
+   "cacheReadInputTokens": 2929922,
+   "cacheCreationInputTokens": 135740,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 135740,
+   "webSearchRequests": 0,
+   "costUSD": 1.2474342,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "canonicalModel": "claude-sonnet-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "models": [
+  "claude-sonnet-5-5"
+ ],
+ "cost_usd": 1.2474342,
+ "num_turns": 7,
+ "session_id": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "subtype": "success"
+}

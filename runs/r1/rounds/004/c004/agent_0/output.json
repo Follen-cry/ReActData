@@ -1,0 +1,32 @@
+{
+ "ok": true,
+ "returncode": 0,
+ "wall_s": 54.61728358268738,
+ "resumed_from": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "result": "I've written candidate c004 in `/work`. It hasn't been trained, since I can't run code here.\n\n**Evidence read:** `report.md` (from c002 on) and the first 110 lines of `analysis_traces/c003.json`. I did not open `results.json`, the dev items or the failure images this round. The `dev_move_*` numbers in `proposal.md` come from my c001 read.\n\n**What c003 showed:** it scored 0.350 against the baseline's 0.391 (D \u22120.037, CI \u22120.065 to \u22120.010), close to c001's 0.343. Cutting the sub-goal phase from 70 to 40 steps made almost no difference. So the damage probably comes from what the sub-goal target shows (F absent) or from splitting the rows, not from how long it runs. One run each can't separate those.\n\n**What c004 does:**\n- **Each step:** 10 plain final-frame rows plus 6 rows that target a random settled frame from 50 to 57.\n- **Why those frames:** E and F are already at their final state there, so the content matches the test target.\n- **Text:** the extra rows use the `late` template, \"{description} Generate {target_spec}.\"\n- **Schedule:** the same mix runs for all 100 steps, so I declared it static.\n\nIf this lands near the baseline, the earlier damage came from the F-absent targets. If it is also lower, any change to the row mix costs score at this scale, and later candidates should stay in the baseline format.\n\n**`analysis.py` logs:** per-template loss in 10-step windows, a loss probe every 20 steps (final vs frame 54) on 8 held-out clips, and generate probes at steps 49 and 99.\n\n**Expected result:** dev 0.37 to 0.41, about baseline. Below 0.35 would mean row-type changes alone hurt. I expect no gain and ran it as a diagnostic.\n\n`proposal.md` and `memory.md` are updated.",
+ "model_usage": {
+  "claude-sonnet-5-5": {
+   "inputTokens": 42,
+   "outputTokens": 22361,
+   "thinkingTokens": 4309,
+   "cacheReadInputTokens": 1084878,
+   "cacheCreationInputTokens": 95216,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 95216,
+   "webSearchRequests": 0,
+   "costUSD": 0.7130458000000001,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "canonicalModel": "claude-sonnet-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "models": [
+  "claude-sonnet-5-5"
+ ],
+ "cost_usd": 0.7130458000000001,
+ "num_turns": 10,
+ "session_id": "9b4811d8-e8fe-40ef-9d6c-35e5c5edb5c4",
+ "subtype": "success"
+}

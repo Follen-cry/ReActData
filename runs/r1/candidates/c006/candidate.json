@@ -1,0 +1,13 @@
+{
+ "cand_id": "c006",
+ "code_sha256": "7f0af4dc2708a7c83f6eb3f1746018405d6a5cc564699409929f9c87ace2e810",
+ "config_sha256": "3a8e9b514608c302f2344209f372da55b5371d75bb3083af6aefa9328201caa2",
+ "templates_sha256": "1f5b115f37a27ae57965070fe454aaef69c5b6e1995c44b08157b7edd2504a98",
+ "protocol_sha256": "27dbec46220140f86dee8816630cb92716a509f73c6b2ce5f34b25bafcbf2476",
+ "round": 6,
+ "parent": "c005",
+ "class_label": "static",
+ "status": "trained",
+ "run": "c006-s1000-g4",
+ "dev_mean": 0.4147396325635206
+}
