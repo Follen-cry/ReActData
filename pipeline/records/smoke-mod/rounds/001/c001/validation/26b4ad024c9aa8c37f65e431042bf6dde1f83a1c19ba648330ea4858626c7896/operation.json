@@ -1,0 +1,42 @@
+{
+ "status": "completed",
+ "result": {
+  "candidate": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/rounds/001/c001/work",
+  "errors": [],
+  "warnings": [],
+  "declared_class": "schedule",
+  "tested_behaviour": {
+   "steps_with_different_recipes_under_perturbed_signals": 0,
+   "early_vs_late_tv": {
+    "n_context": 0.0,
+    "context_bin": 0.0,
+    "template": 0.375,
+    "target_bin": 0.375
+   },
+   "tested_class": "schedule"
+  },
+  "class_label": "schedule",
+  "class_consistent": true,
+  "class_note": "diagnostic only: limited perturbation tests cannot prove program properties",
+  "sim_probe_requests": {
+   "generate": 1
+  },
+  "sim_stats": {
+   "rows": 3200,
+   "unique_clips": 16,
+   "vit_images": 3200,
+   "n_context": {
+    "0": 3200
+   },
+   "templates": {
+    "subgoal": 840,
+    "eval_format": 2360
+   },
+   "context_frame_bins_of_10": {},
+   "target_frame_bins_of_10": {
+    "2": 840,
+    "5": 2360
+   }
+  }
+ }
+}

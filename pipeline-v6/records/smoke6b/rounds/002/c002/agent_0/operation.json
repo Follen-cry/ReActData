@@ -1,0 +1,35 @@
+{
+ "status": "completed",
+ "result": {
+  "ok": true,
+  "returncode": 0,
+  "wall_s": 44.31785273551941,
+  "resumed_from": "9ff9dffb-5e8b-476a-9eb5-c215208753b8",
+  "result": "I wrote candidate c002, which gives move 5/8 of the rows and puts them last. Nothing has been trained yet.\n\n**What c001 showed.** c001 scored 0.1538 against 0.1576 for the baseline, so it is no better. Dev feedback is only three items, one per task, so the per-task numbers are very noisy.\n- **Scale:** `dev_scale_000` scored 0.35 against 0.31, with E_cell at 1.0.\n- **Move:** `dev_move_000` scored 0.0 against 0.046, with the E colour still wrong.\n- **Geo:** `dev_geo_000` scored 0.111 against 0.056, with rotation still 0.0.\n- **Probe losses:** they rose through step 2 and fell at step 3, so the last updates before evaluation probably matter most.\n\n**A bug in c001.** Its fixed quota of 56/56/16 summed to 128 rows, but this run has only 4 steps × 16 = 64 rows. It therefore used a truncated shuffle. At step 0 it drew 10 scale, 5 move and 1 geo rows.\n\n**What c002 does.**\n- **Mix:** `databuilder.py` scales the task fractions to the actual row count: 1/4 scale, 1/8 geo, 5/8 move, which is 16/8/40 of 64 rows.\n- **Clips:** they are drawn at random within each task, seeded, so the rule holds for any seed.\n- **Order:** it is in task blocks, scale then geo then move, so the final steps are all move.\n- **Why:** move is the weak task. The recolour rule looked learnable in c001, since scale E_cell went from 0.744 to 1.0, and scale and geo look close to a plateau.\n- **Unchanged:** `analysis.py` is the same as c001.\n- **Files:** I also updated `proposal.md`, `candidate.yaml` and `memory.md`.\n\n**Expected result.** Move +0.05 to +0.12, scale −0.05 to 0, geo about 0, so the dev mean should rise by about 0.01 to 0.04. If move stays at 0 even with 40 move rows, the move rule is not learnable with this budget, and that would refute the hypothesis.",
+  "model_usage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 16,
+    "outputTokens": 9029,
+    "thinkingTokens": 1378,
+    "cacheReadInputTokens": 208911,
+    "cacheCreationInputTokens": 54222,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 54222,
+    "webSearchRequests": 0,
+    "costUSD": 0.32810110000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "models": [
+   "claude-sonnet-5-5"
+  ],
+  "cost_usd": 0.32810110000000003,
+  "num_turns": 10,
+  "session_id": "9ff9dffb-5e8b-476a-9eb5-c215208753b8",
+  "subtype": "success"
+ }
+}

@@ -1,0 +1,147 @@
+{
+ "n": 4,
+ "task_means": {
+  "shape_color_then_move": 0.0,
+  "shape_color_then_scale": 0.09758396784805545
+ },
+ "mean": 0.048791983924027726,
+ "mean_note": "equal-weight mean of the task means",
+ "by_task": {
+  "shape_color_then_move": {
+   "n": 2,
+   "mean": 0.0,
+   "sub_mean": {
+    "E_cell": 0.0,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "n_invalid": 0
+  },
+  "shape_color_then_scale": {
+   "n": 2,
+   "mean": 0.09758396784805545,
+   "sub_mean": {
+    "E_cell": 0.2788113367087299,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "n_invalid": 0
+  }
+ },
+ "n_invalid": 0,
+ "sub_mean": {
+  "E_cell": 0.13940566835436494,
+  "F_cell": 0.0,
+  "F_transform": 0.0
+ },
+ "version": {
+  "version": "analogy_grid v1.0",
+  "analogy_grid_sha256": "a2c145ddcec83d47357a3f6a7f7bff90c58881e27e3b619d6ecfefaadec2a3da",
+  "cvlib_sha256": "05fc90a59beae304fcd750892480aa5c8b6b256404abb083a79e52f00cba8845"
+ },
+ "items": [
+  {
+   "id": "dev_move_000",
+   "task": "shape_color_then_move",
+   "score": 0.0,
+   "sub": {
+    "E_cell": 0.0,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "valid": true,
+   "categories": [
+    "blank_or_repainted",
+    "context_damaged",
+    "E_missing",
+    "F_missing",
+    "extra_objects"
+   ],
+   "gates": {
+    "ceiling": 0.15,
+    "context_gate": 0.0,
+    "transform": {
+     "reason": "E or F missing"
+    },
+    "n_objects": 4
+   }
+  },
+  {
+   "id": "dev_move_001",
+   "task": "shape_color_then_move",
+   "score": 0.0,
+   "sub": {
+    "E_cell": 0.0,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "valid": true,
+   "categories": [
+    "context_damaged",
+    "E_wrong",
+    "F_wrong_colour",
+    "F_wrong_transform",
+    "extra_objects"
+   ],
+   "gates": {
+    "ceiling": 1.0,
+    "context_gate": 0.0,
+    "transform": {
+     "dy_gt": 0.0,
+     "dy_cand": 0.3
+    },
+    "n_objects": 5
+   }
+  },
+  {
+   "id": "dev_scale_000",
+   "task": "shape_color_then_scale",
+   "score": 0.0,
+   "sub": {
+    "E_cell": 0.0,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "valid": true,
+   "categories": [
+    "context_damaged",
+    "E_missing",
+    "F_missing",
+    "extra_objects"
+   ],
+   "gates": {
+    "ceiling": 1.0,
+    "context_gate": 0.5,
+    "transform": {
+     "reason": "E or F missing"
+    },
+    "n_objects": 5
+   }
+  },
+  {
+   "id": "dev_scale_001",
+   "task": "shape_color_then_scale",
+   "score": 0.1951679356961109,
+   "sub": {
+    "E_cell": 0.5576226734174597,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "valid": true,
+   "categories": [
+    "context_damaged",
+    "F_wrong_colour",
+    "F_wrong_transform"
+   ],
+   "gates": {
+    "ceiling": 1.0,
+    "context_gate": 0.604,
+    "transform": {
+     "log_ratio_gt": 0.693,
+     "log_ratio_cand": -0.011
+    },
+    "n_objects": 6
+   }
+  }
+ ]
+}

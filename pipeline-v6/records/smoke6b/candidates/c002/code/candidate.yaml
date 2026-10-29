@@ -1,0 +1,4 @@
+# c002: move-heavy (5/8 move, 1/4 scale, 1/8 geo), blocks scale -> geo -> move. declared_class: static
+declared_class: static
+builder: {}
+analysis: {}

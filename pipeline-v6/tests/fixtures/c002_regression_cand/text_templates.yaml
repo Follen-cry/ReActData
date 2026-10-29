@@ -1,0 +1,2 @@
+eval_format: "{wrapped_description}"
+with_context: "{wrapped_description}\n\nAn intermediate frame of the same clip:\n{context_list}"

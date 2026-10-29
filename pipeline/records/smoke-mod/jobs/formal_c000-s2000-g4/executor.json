@@ -1,0 +1,13 @@
+{
+ "run_json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/formal_c000-s2000-g4/run.json",
+ "run_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/formal_c000-s2000-g4",
+ "slot": {
+  "name": "D",
+  "node": "torrnode14",
+  "gpus": "4,5,6,7",
+  "port": 29784
+ },
+ "start": 1793208609.9748518,
+ "attempt": 0,
+ "launch_pending": false
+}

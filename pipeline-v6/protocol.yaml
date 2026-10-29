@@ -1,0 +1,106 @@
+# reactdata-v6 protocol (2026-10-28). Flow and rules of reactdata-v5 (design v3: baseline replicates for training noise,
+# screening vs the replicate mean, serial lineage search, paired-seed confirmation, multi-seed formal test) with these
+# changes (researcher brief of 2026-10-28):
+#   * three VBVR tasks: shape_color_then_scale, shape_color_then_move, 2d_geometric_transformation (all with validated
+#     deterministic rule scorers: GT ~1.0, copy of input 0 / 0 / 0.12);
+#   * training budget: 128 datapoints, one epoch (each clip at most once) = 8 steps x 16 rows; pool 480 clips (160 / task);
+#     the program's levers are the task mix, which clips, their order, and loss feedback;
+#   * rows are F0 + evaluation text -> final frame only (no context frames, no intermediate targets: 2d_geo videos have
+#     70 frames at 15 fps vs 60 at 16, and v1/v4/v5 found context / pre-final targets neutral or harmful); text fixed;
+#   * dev = 50 / task (150), test = 50 / task (150); dev / test score = equal-weight mean of the three task means;
+#   * 6 agent steps (one candidate each), top 2 confirmed on 4 seeds, 3 formal seeds; <= 8 GPUs, wall budget below.
+# Fresh run: nothing inherited.
+version: 6
+design: v3
+experiment: reactdata-v6
+model_init: InternVL-U snapshot f012d760, LoRA init seed 42 for every arm
+
+data:
+  train_pool: {tasks: [shape_color_then_scale, shape_color_then_move, 2d_geometric_transformation], n: 480, per_task: 160,
+               selection: "runner/build_data.py, seed 20261028", rows_per_run: 128, max_uses_per_clip: 1}
+  frames: "F0 / final PNG endpoints at 512x512"
+  dev: "manifests/dev.jsonl (50 scale + 50 move + 50 geo; equal-weight task means); copies of reactdata-v0/v1 dev items"
+  test: "manifests/test.jsonl (50 / task): move = 50 of reactdata-v1 test, geo = 50 of reactdata-v0 test (both used once
+         before), scale = 50 fresh raw clips"
+targets:
+  agent_chooses_target_frame: false
+  final_only: true
+  text: "fixed: eval_format = {wrapped_description}"
+
+training:
+  config: configs/train.yaml
+  max_steps: 8
+  global_batch: 16
+  gpus_per_run: 4
+  warmup_steps: 3                      # calibration 2026-10-28 (tools/calibrate.py, c000 seed 1000, dev): Base .037, lr1x/w6 .100, lr1x/w2 .130,
+  overrides: ["optim.lr=2.0e-5", "optim.gen_decoder_lr=1.0e-4"]   # lr2x/w3 .149 (chosen), lr5x/w2 .026 and lr10x/w2 .023 collapse (E/F never drawn)
+  screen_seed: 1000                    # every candidate's screening run and baseline replicate 0
+
+noise:                                 # P1: baseline replicates differing only in the run seed (subset draw, order, per-row noise)
+  baseline_seeds: [1000, 1001, 1002, 1003, 1004]
+  sd_train: "std of the replicates' dev scores; delta = sd_train (one run's noise); shown to the Builder Agent"
+
+evaluation:
+  dev: manifests/dev.jsonl
+  test: manifests/test.jsonl
+  S: [0]
+  bootstrap: {B: 10000, seed: 20261025, unit: datapoint, stratified_by: task}
+
+search:
+  max_agent_candidates: 6
+  rounds: 6
+  candidates_per_round: 1              # serial: every candidate sees every earlier result
+  screen_reference: replicate_mean
+  proposal:
+    sections: ["Evidence", "Hypothesis", "Program", "What analysis.py measures", "Expected result"]
+    min_item_refs: 3
+  workspace_start: latest_valid
+  config_only_is_duplicate: true
+  agent:
+    cli: "claude -p --model sonnet"
+    tools: [Read, Edit, Write]
+    timeout_s: 1800
+    max_turns: 80
+    session: resume_chain
+    instructions: BUILDER_AGENT_v6.md
+  agent_retry: 1
+  repair_rounds: 1
+  train_infra_retry: 1
+  stop_after_consecutive_rejects: 3
+  stop_rules: "max candidates, wall budget, consecutive rejects; no plateau rule"
+
+confirm:
+  top_k: 2
+  seeds: [1001, 1002, 1003, 1004]
+  statistic: "D = mean over seeds of (cand - base); SE^2 = 2 sd_train^2 / R + SE_item^2; Bonferroni over top_k (z = 2.24 at alpha 0.05, k 2)"
+
+selection:
+  rule: "among confirmed candidates with D >= delta and CI lower bound > 0, the one with the largest D; otherwise the fixed baseline"
+  dev_ci_is_confirmatory: false
+
+final:
+  formal_seeds: [2000, 2001, 2002]
+  test_S: [0]
+  compare: "same statistic as confirm (SE_train from sd_train, m = 1)"
+
+budget:
+  wall_hours: 5.5                      # researcher brief: <= 8 h in total; r1 started 19:20 after calibration + smokes and a ~40 min wait for free A40s
+  reserve_final_hours: 1.8             # confirmation (8 jobs, ~0.8 h) + P3 (7 jobs, ~0.8 h) + margin
+  buffer_hours: 0.2
+  max_gpus: 8
+  disk_gb: 60
+  max_concurrent_jobs: 2              # 2 x 4 GPUs = the 8-GPU limit
+  slots:
+    - {name: A, node: torrnode12, gpus: "0,1,2,3", port: 29791}
+    - {name: B, node: torrnode12, gpus: "4,5,6,7", port: 29792}
+    - {name: C, node: torrnode14, gpus: "4,5,6,7", port: 29793}   # fallback; torrnode14 GPU 3 is flaky: never used
+    - {name: D, node: torrnode11, gpus: "0,1,2,3", port: 29794}   # fallback
+    - {name: E, node: torrnode11, gpus: "4,5,6,7", port: 29795}   # fallbacks (shared cluster; any idle A40 group, still <= 2 jobs = 8 GPUs)
+    - {name: F, node: torrnode15, gpus: "0,1,2,3", port: 29796}
+    - {name: G, node: torrnode15, gpus: "4,5,6,7", port: 29797}
+    - {name: H, node: torrnode13, gpus: "0,1,2,3", port: 29798}
+    - {name: I, node: torrnode13, gpus: "4,5,6,7", port: 29799}
+  estimate: "per job ~11 min (load ~1.5, train ~1, dev gen 150 rows ~6.5, overhead); P1 ~0.6 h, search ~1.6 h (6 x (agent + job)), confirm ~0.8 h, P3 ~0.8 h: ~3.8 h"
+
+probes: {limits: "api/plugin_api.py (v6: loss probes every step, <= 8; one generate probe at step >= 4)"}
+audit: {quantity: "single fixed template: no template-choice channel (audit reports it and passes)"}

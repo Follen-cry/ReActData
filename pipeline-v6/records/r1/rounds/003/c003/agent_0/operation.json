@@ -1,0 +1,35 @@
+{
+ "status": "completed",
+ "result": {
+  "ok": true,
+  "returncode": 0,
+  "wall_s": 34.80688834190369,
+  "resumed_from": "a9308895-7564-4691-a384-8fd94660f2a2",
+  "result": "I wrote candidate c003 but haven't run it. I read only `report.md` and the first 30 lines of `dev_items/c002.json` this round. I did not open the c002 analysis trace, the failure images, or the rest of the dev items.\n\n**c002 result:** it scored 0.1818 against the baseline's 0.1493, a gain of +0.055 (CI [+0.032, +0.078]). Scale drove most of it, at +0.117. Move gained +0.029 and geo +0.020, and neither is significant. Picking clips with large edits works, and the earlier task-mix idea did not.\n\n**Geo trade-off in c002:** geo shape fidelity dropped from 0.563 to 0.297, and `deformed_shape` errors rose from 15 to 33. Position alignment rose from 0.050 to 0.147. `dev_geo_000` shows the same split: position 0.297 but shape fidelity 0.056.\n\n**c003:** it tests whether more selective picking helps further.\n- **Scale and move:** the 43 clips with the largest `change_px` per task, the same for every seed. c002 drew them at random from the top 50%.\n- **Geo:** unchanged from c002 (random from the top 50%), so any difference from c002 comes from scale and move.\n- **Code:** `top_frac` in `candidate.yaml` is now set per task, with a small matching change in `databuilder.py`. The quota stays 43/43/42, and `analysis.py` is unchanged.\n\n**Prediction:** scale rises from about 0.25 to 0.28 or more, move from about 0.17 to 0.20, and geo stays around 0.12. If scale and move fall back toward baseline (scale below 0.19, move below 0.16), the c002 gain came from moderate edit size and diversity, not from the largest edits.\n\n`proposal.md` has all five sections and `memory.md` is updated.",
+  "model_usage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 24,
+    "outputTokens": 11217,
+    "thinkingTokens": 1936,
+    "cacheReadInputTokens": 442993,
+    "cacheCreationInputTokens": 74024,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 74024,
+    "webSearchRequests": 0,
+    "costUSD": 0.4526133,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "models": [
+   "claude-sonnet-5-5"
+  ],
+  "cost_usd": 0.4526133,
+  "num_turns": 8,
+  "session_id": "a9308895-7564-4691-a384-8fd94660f2a2",
+  "subtype": "success"
+ }
+}

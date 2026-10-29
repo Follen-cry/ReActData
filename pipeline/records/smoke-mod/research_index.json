@@ -1,0 +1,266 @@
+{
+ "schema_version": 1,
+ "candidates": [
+  {
+   "candidate_id": "c000",
+   "parent_id": null,
+   "status": "trained",
+   "agent_authored": {
+    "proposal": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline/seeds/fixed_f0_final/proposal.md",
+    "memory": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline/seeds/fixed_f0_final/memory.md",
+    "diff": null,
+    "explanation": null
+   },
+   "measurements": {
+    "evaluation": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1000-g4/eval/dev",
+    "analysis": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1000-g4/signals.jsonl",
+    "probes": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1000-g4/probes.jsonl",
+    "checks": null,
+    "audit": null,
+    "replicates": {
+     "1000": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1000-g4",
+     "1001": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1001-g4"
+    }
+   },
+   "protocol_decisions": {
+    "comparison": null,
+    "confirmation": null,
+    "rejection_reason": null,
+    "selected": true
+   }
+  },
+  {
+   "candidate_id": "c001",
+   "parent_id": "c000",
+   "status": "trained",
+   "agent_authored": {
+    "proposal": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/candidates/c001/code/proposal.md",
+    "memory": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/candidates/c001/code/memory.md",
+    "diff": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/rounds/001/c001/patch.diff",
+    "explanation": null
+   },
+   "measurements": {
+    "evaluation": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1000-g4/eval/dev",
+    "analysis": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1000-g4/signals.jsonl",
+    "probes": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1000-g4/probes.jsonl",
+    "checks": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/rounds/001/c001/checks.json",
+    "audit": {
+     "mi_bits": 0.0,
+     "p_perm": 1.0,
+     "flag": false,
+     "templates": {
+      "subgoal": 18,
+      "eval_format": 46
+     }
+    },
+    "replicates": {}
+   },
+   "protocol_decisions": {
+    "comparison": {
+     "n": 4,
+     "D": -0.024395991962013863,
+     "SE": 0.017246585609150267,
+     "ci_lo": -0.048791983924027726,
+     "ci_hi": 0.0,
+     "mean_a": 0.0,
+     "mean_b": 0.024395991962013863,
+     "per_task": {
+      "dev_move": {
+       "n": 2,
+       "D": 0.0,
+       "ci_lo": 0.0,
+       "ci_hi": 0.0
+      },
+      "dev_scale": {
+       "n": 2,
+       "D": -0.048791983924027726,
+       "ci_lo": -0.09758396784805545,
+       "ci_hi": 0.0
+      }
+     },
+     "reference": "replicate_mean",
+     "D_over_sd_train": -0.7071067811865476
+    },
+    "confirmation": {
+     "R": 1,
+     "D": -0.022919589964771517,
+     "D_per_seed": [
+      -0.022919589964771517
+     ],
+     "SE_train": 0.048791983924027726,
+     "SE_item": 0.01620285295508939,
+     "SE": 0.05141196494131331,
+     "z": 1.9599639845400536,
+     "ci_lo": -0.1236851896241815,
+     "ci_hi": 0.07784600969463847,
+     "per_task": {
+      "dev_move": {
+       "n": 2,
+       "D": 0.0,
+       "ci_lo": 0.0,
+       "ci_hi": 0.0
+      },
+      "dev_scale": {
+       "n": 2,
+       "D": -0.045839179929543034,
+       "ci_lo": -0.09167835985908607,
+       "ci_hi": 0.0
+      }
+     },
+     "m_comparisons": 1,
+     "mean_cand": 0.02587239395925621,
+     "mean_base": 0.048791983924027726
+    },
+    "rejection_reason": null,
+    "selected": false
+   }
+  },
+  {
+   "candidate_id": "c002",
+   "parent_id": "c001",
+   "status": "trained",
+   "agent_authored": {
+    "proposal": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/candidates/c002/code/proposal.md",
+    "memory": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/candidates/c002/code/memory.md",
+    "diff": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/rounds/002/c002/patch.diff",
+    "explanation": null
+   },
+   "measurements": {
+    "evaluation": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c002-s1000-g4/eval/dev",
+    "analysis": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c002-s1000-g4/signals.jsonl",
+    "probes": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c002-s1000-g4/probes.jsonl",
+    "checks": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/rounds/002/c002/checks.json",
+    "audit": {
+     "mi_bits": 0.006099367586924809,
+     "p_perm": 1.0,
+     "flag": false,
+     "templates": {
+      "subgoal": 24,
+      "eval_format": 40
+     }
+    },
+    "replicates": {}
+   },
+   "protocol_decisions": {
+    "comparison": {
+     "n": 4,
+     "D": -0.024395991962013863,
+     "SE": 0.017246585609150267,
+     "ci_lo": -0.048791983924027726,
+     "ci_hi": 0.0,
+     "mean_a": 0.0,
+     "mean_b": 0.024395991962013863,
+     "per_task": {
+      "dev_move": {
+       "n": 2,
+       "D": 0.0,
+       "ci_lo": 0.0,
+       "ci_hi": 0.0
+      },
+      "dev_scale": {
+       "n": 2,
+       "D": -0.048791983924027726,
+       "ci_lo": -0.09758396784805545,
+       "ci_hi": 0.0
+      }
+     },
+     "reference": "replicate_mean",
+     "D_over_sd_train": -0.7071067811865476
+    },
+    "confirmation": null,
+    "rejection_reason": null,
+    "selected": false
+   }
+  }
+ ],
+ "jobs": {
+  "base_dev": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/base_dev/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/base_dev/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/base_dev/cost.json"
+  },
+  "base_test": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/base_test/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/base_test/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/base_test/cost.json"
+  },
+  "c000-s1000-g4": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1000-g4/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1000-g4/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1000-g4/cost.json"
+  },
+  "c000-s1001-g4": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1001-g4/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1001-g4/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1001-g4/cost.json"
+  },
+  "c001-s1000-g4": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1000-g4/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1000-g4/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1000-g4/cost.json"
+  },
+  "c001-s1001-g4": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1001-g4/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1001-g4/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1001-g4/cost.json"
+  },
+  "c002-s1000-g4": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c002-s1000-g4/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c002-s1000-g4/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c002-s1000-g4/cost.json"
+  },
+  "formal_c000-s2000-g4": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/formal_c000-s2000-g4/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/formal_c000-s2000-g4/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/formal_c000-s2000-g4/cost.json"
+  },
+  "p0_pilot": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/p0_pilot/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/p0_pilot/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/p0_pilot/cost.json"
+  }
+ },
+ "selection": {
+  "selected": "c000",
+  "rule": "no confirmed candidate passed: fixed baseline",
+  "delta": 0.034501142700225015,
+  "confirm": {
+   "c001": {
+    "R": 1,
+    "D": -0.022919589964771517,
+    "D_per_seed": [
+     -0.022919589964771517
+    ],
+    "SE_train": 0.048791983924027726,
+    "SE_item": 0.01620285295508939,
+    "SE": 0.05141196494131331,
+    "z": 1.9599639845400536,
+    "ci_lo": -0.1236851896241815,
+    "ci_hi": 0.07784600969463847,
+    "per_task": {
+     "dev_move": {
+      "n": 2,
+      "D": 0.0,
+      "ci_lo": 0.0,
+      "ci_hi": 0.0
+     },
+     "dev_scale": {
+      "n": 2,
+      "D": -0.045839179929543034,
+      "ci_lo": -0.09167835985908607,
+      "ci_hi": 0.0
+     }
+    },
+    "m_comparisons": 1,
+    "mean_cand": 0.02587239395925621,
+    "mean_base": 0.048791983924027726
+   }
+  },
+  "note": "dev is the selection set; only P3's multi-seed formal retraining on test is independent"
+ },
+ "frozen": {
+  "cand": "c000",
+  "dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/frozen/c000",
+  "code_sha256": "d145eb47c67405743814b17ff0cd2f7dd1ba4b0794ea2212c19df5c1d3986f64"
+ }
+}

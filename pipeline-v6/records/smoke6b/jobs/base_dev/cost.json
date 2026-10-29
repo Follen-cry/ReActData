@@ -1,0 +1,19 @@
+{
+ "load_wall_s": 3.54817271232605,
+ "world_size": 4,
+ "evals": {
+  "dev/g0": {
+   "name": "dev",
+   "seed": 0,
+   "mean": 0.001807585426101276,
+   "n": 3,
+   "n_invalid": 0,
+   "gen_wall_s": 11.707099676132202,
+   "world": 4
+  }
+ },
+ "vit_tokens": 0,
+ "train_gpu_s": 0.0,
+ "probe_gpu_s": 0.0,
+ "eval_gpu_s": 46.82839870452881
+}

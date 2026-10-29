@@ -1,0 +1,2 @@
+eval_format: "{wrapped_description}"
+subgoal: "{description}\n\nGenerate {target_spec}.\n{context_list}"

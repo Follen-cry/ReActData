@@ -1,0 +1,29 @@
+{
+ "seed": 20261028,
+ "counts": {
+  "train_pool": {
+   "shape_color_then_scale": 160,
+   "shape_color_then_move": 160,
+   "2d_geometric_transformation": 160
+  },
+  "inner_probe": {
+   "shape_color_then_scale": 11,
+   "shape_color_then_move": 11,
+   "2d_geometric_transformation": 10
+  },
+  "dev": {
+   "shape_color_then_scale": 50,
+   "shape_color_then_move": 50,
+   "2d_geometric_transformation": 50
+  },
+  "test": {
+   "2d_geometric_transformation": 50,
+   "shape_color_then_move": 50,
+   "shape_color_then_scale": 50
+  }
+ },
+ "isolation": {
+  "md5_overlap": 0,
+  "param_dup": 0
+ }
+}

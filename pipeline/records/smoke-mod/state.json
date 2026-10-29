@@ -1,0 +1,488 @@
+{
+ "run_id": "smoke-mod",
+ "smoke": true,
+ "phase": "DONE",
+ "candidates": {
+  "c000": {
+   "role": "fixed_baseline",
+   "status": "trained",
+   "class_label": "fixed",
+   "code_dir": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline/seeds/fixed_f0_final",
+   "run_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1000-g4",
+   "dev_mean": 0.0,
+   "dev_task_means": {
+    "dev_move": 0.0,
+    "dev_scale": 0.0
+   },
+   "cost_summary": {
+    "rows": 64,
+    "unique_clips": 16,
+    "repeated_rows": 48,
+    "max_clip_uses": 4,
+    "vit_images": 64,
+    "vit_tokens": 16384,
+    "seq_tokens": 31468,
+    "train_gpu_s": 93.24718189239502,
+    "probe_gpu_s": 0.0,
+    "eval_gpu_s": 40.87389659881592,
+    "plugin_wall_s": 0.002768278121948242
+   },
+   "replicates": {
+    "1000": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1000-g4",
+    "1001": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c000-s1001-g4"
+   }
+  },
+  "c001": {
+   "role": "agent",
+   "round": 1,
+   "status": "trained",
+   "parent": "c000",
+   "agent_calls": [
+    {
+     "ok": true,
+     "models": [
+      "claude-sonnet-5-5"
+     ],
+     "cost_usd": 0.216944,
+     "num_turns": 19,
+     "wall_s": 46.59230589866638,
+     "session_id": "dcd9638f-cd79-4afc-b01f-de939ddb6402",
+     "replayed_from": null,
+     "resumed_from": null
+    }
+   ],
+   "call_keys": [
+    "proposal"
+   ],
+   "code_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/candidates/c001/code",
+   "class_label": "schedule",
+   "declared_class": "schedule",
+   "checks_summary": {
+    "class_label": "schedule",
+    "tested": {
+     "steps_with_different_recipes_under_perturbed_signals": 0,
+     "early_vs_late_tv": {
+      "n_context": 0.0,
+      "context_bin": 0.0,
+      "template": 0.375,
+      "target_bin": 0.375
+     },
+     "tested_class": "schedule"
+    },
+    "warnings": [],
+    "sim_stats": {
+     "rows": 3200,
+     "unique_clips": 16,
+     "vit_images": 3200,
+     "n_context": {
+      "0": 3200
+     },
+     "templates": {
+      "subgoal": 840,
+      "eval_format": 2360
+     },
+     "context_frame_bins_of_10": {},
+     "target_frame_bins_of_10": {
+      "2": 840,
+      "5": 2360
+     }
+    }
+   },
+   "audit": {
+    "mi_bits": 0.0,
+    "p_perm": 1.0,
+    "flag": false,
+    "templates": {
+     "subgoal": 18,
+     "eval_format": 46
+    }
+   },
+   "run_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c001-s1000-g4",
+   "dev_mean": 0.0,
+   "dev_task_means": {
+    "dev_move": 0.0,
+    "dev_scale": 0.0
+   },
+   "cost_summary": {
+    "rows": 64,
+    "unique_clips": 16,
+    "repeated_rows": 48,
+    "max_clip_uses": 4,
+    "vit_images": 64,
+    "vit_tokens": 16384,
+    "seq_tokens": 31212,
+    "train_gpu_s": 265.8575220108032,
+    "probe_gpu_s": 172.0335750579834,
+    "eval_gpu_s": 42.1404914855957,
+    "plugin_wall_s": 0.0028204917907714844
+   },
+   "comparison": {
+    "n": 4,
+    "D": -0.024395991962013863,
+    "SE": 0.017246585609150267,
+    "ci_lo": -0.048791983924027726,
+    "ci_hi": 0.0,
+    "mean_a": 0.0,
+    "mean_b": 0.024395991962013863,
+    "per_task": {
+     "dev_move": {
+      "n": 2,
+      "D": 0.0,
+      "ci_lo": 0.0,
+      "ci_hi": 0.0
+     },
+     "dev_scale": {
+      "n": 2,
+      "D": -0.048791983924027726,
+      "ci_lo": -0.09758396784805545,
+      "ci_hi": 0.0
+     }
+    },
+    "reference": "replicate_mean",
+    "D_over_sd_train": -0.7071067811865476
+   },
+   "confirm": {
+    "R": 1,
+    "D": -0.022919589964771517,
+    "D_per_seed": [
+     -0.022919589964771517
+    ],
+    "SE_train": 0.048791983924027726,
+    "SE_item": 0.01620285295508939,
+    "SE": 0.05141196494131331,
+    "z": 1.9599639845400536,
+    "ci_lo": -0.1236851896241815,
+    "ci_hi": 0.07784600969463847,
+    "per_task": {
+     "dev_move": {
+      "n": 2,
+      "D": 0.0,
+      "ci_lo": 0.0,
+      "ci_hi": 0.0
+     },
+     "dev_scale": {
+      "n": 2,
+      "D": -0.045839179929543034,
+      "ci_lo": -0.09167835985908607,
+      "ci_hi": 0.0
+     }
+    },
+    "m_comparisons": 1,
+    "mean_cand": 0.02587239395925621,
+    "mean_base": 0.048791983924027726
+   }
+  },
+  "c002": {
+   "role": "agent",
+   "round": 2,
+   "status": "trained",
+   "parent": "c001",
+   "agent_calls": [
+    {
+     "ok": true,
+     "models": [
+      "claude-sonnet-5-5"
+     ],
+     "cost_usd": 0.3040526,
+     "num_turns": 7,
+     "wall_s": 39.098384141922,
+     "session_id": "dcd9638f-cd79-4afc-b01f-de939ddb6402",
+     "replayed_from": null,
+     "resumed_from": "dcd9638f-cd79-4afc-b01f-de939ddb6402"
+    }
+   ],
+   "call_keys": [
+    "proposal"
+   ],
+   "code_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/candidates/c002/code",
+   "class_label": "schedule",
+   "declared_class": "schedule",
+   "checks_summary": {
+    "class_label": "schedule",
+    "tested": {
+     "steps_with_different_recipes_under_perturbed_signals": 0,
+     "early_vs_late_tv": {
+      "n_context": 0.0,
+      "context_bin": 0.0,
+      "template": 0.5,
+      "target_bin": 0.5
+     },
+     "tested_class": "schedule"
+    },
+    "warnings": [],
+    "sim_stats": {
+     "rows": 3200,
+     "unique_clips": 16,
+     "vit_images": 3200,
+     "n_context": {
+      "0": 3200
+     },
+     "templates": {
+      "subgoal": 1120,
+      "eval_format": 2080
+     },
+     "context_frame_bins_of_10": {},
+     "target_frame_bins_of_10": {
+      "2": 560,
+      "4": 560,
+      "5": 2080
+     }
+    }
+   },
+   "audit": {
+    "mi_bits": 0.006099367586924809,
+    "p_perm": 1.0,
+    "flag": false,
+    "templates": {
+     "subgoal": 24,
+     "eval_format": 40
+    }
+   },
+   "run_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/c002-s1000-g4",
+   "dev_mean": 0.0,
+   "dev_task_means": {
+    "dev_move": 0.0,
+    "dev_scale": 0.0
+   },
+   "cost_summary": {
+    "rows": 64,
+    "unique_clips": 16,
+    "repeated_rows": 48,
+    "max_clip_uses": 4,
+    "vit_images": 64,
+    "vit_tokens": 16384,
+    "seq_tokens": 31132,
+    "train_gpu_s": 322.10005283355713,
+    "probe_gpu_s": 221.91909217834473,
+    "eval_gpu_s": 60.99225902557373,
+    "plugin_wall_s": 0.00643610954284668
+   },
+   "comparison": {
+    "n": 4,
+    "D": -0.024395991962013863,
+    "SE": 0.017246585609150267,
+    "ci_lo": -0.048791983924027726,
+    "ci_hi": 0.0,
+    "mean_a": 0.0,
+    "mean_b": 0.024395991962013863,
+    "per_task": {
+     "dev_move": {
+      "n": 2,
+      "D": 0.0,
+      "ci_lo": 0.0,
+      "ci_hi": 0.0
+     },
+     "dev_scale": {
+      "n": 2,
+      "D": -0.048791983924027726,
+      "ci_lo": -0.09758396784805545,
+      "ci_hi": 0.0
+     }
+    },
+    "reference": "replicate_mean",
+    "D_over_sd_train": -0.7071067811865476
+   }
+  }
+ },
+ "rejects_in_a_row": 0,
+ "failures": [
+  {
+   "job": "c000-s1000-g4",
+   "kind": "infra",
+   "attempt": 1,
+   "action": "resume",
+   "log_tail": "le \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py\", line 355, in wrapper\n    return f(*args, **kwargs)\n  File \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/run.py\", line 918, in main\n    run(args)\n  File \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/run.py\", line 909, in run\n    elastic_launch(\n  File \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/launcher/api.py\", line 138, in __call__\n    return launch_agent(self._config, self._entrypoint, list(args))\n  File \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/launcher/api.py\", line 269, in launch_agent\n    raise ChildFailedError(\ntorch.distributed.elastic.multiprocessing.errors.ChildFailedError: \n============================================================\nrunner/train_entry.py FAILED\n------------------------------------------------------------\nFailures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\nRoot Cause (first observed failure):\n[0]:\n  time      : 2026-10-28_17:11:29\n  host      : torrnode15.priv\n  rank      : 0 (local_rank: 0)\n  exitcode  : 1 (pid: 44375)\n  error_file: <N/A>\n  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
+  },
+  {
+   "job": "c001-s1001-g4",
+   "kind": "infra",
+   "attempt": 1,
+   "action": "resume",
+   "log_tail": "le \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py\", line 355, in wrapper\n    return f(*args, **kwargs)\n  File \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/run.py\", line 918, in main\n    run(args)\n  File \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/run.py\", line 909, in run\n    elastic_launch(\n  File \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/launcher/api.py\", line 138, in __call__\n    return launch_agent(self._config, self._entrypoint, list(args))\n  File \"/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/distributed/launcher/api.py\", line 269, in launch_agent\n    raise ChildFailedError(\ntorch.distributed.elastic.multiprocessing.errors.ChildFailedError: \n============================================================\nrunner/train_entry.py FAILED\n------------------------------------------------------------\nFailures:\n  <NO_OTHER_FAILURES>\n------------------------------------------------------------\nRoot Cause (first observed failure):\n[0]:\n  time      : 2026-10-28_17:25:30\n  host      : torrnode15.priv\n  rank      : 0 (local_rank: 0)\n  exitcode  : 1 (pid: 53784)\n  error_file: <N/A>\n  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n"
+  }
+ ],
+ "run_json": {
+  "protocol": "protocol.yaml",
+  "protocol_sha256": "27dbec46220140f86dee8816630cb92716a509f73c6b2ce5f34b25bafcbf2476",
+  "runner_sha256": "6d8525a952c016ae0ba53c13ce2fb1699bde925257075390e3613f6b5019fc05",
+  "api_sha256": "58a37b2d106193bd9f861366b0ada89478b9f8e17b4f1c809db059a78321dd6e",
+  "builder_agent_md_sha256": "230cbbd955b3b065125e728fc04f55a9c9f217e0250bf183316bc939b39040b5",
+  "data_build": {
+   "counts": {
+    "train_pool": 16,
+    "inner_probe": 32,
+    "dev": 100,
+    "test": 100
+   },
+   "from": "reactdata-v4 data"
+  },
+  "scorer": {
+   "version": "analogy_grid v1.0",
+   "analogy_grid_sha256": "a2c145ddcec83d47357a3f6a7f7bff90c58881e27e3b619d6ecfefaadec2a3da",
+   "cvlib_sha256": "05fc90a59beae304fcd750892480aa5c8b6b256404abb083a79e52f00cba8845"
+  }
+ },
+ "budget_start": 1793207097.5511694,
+ "disk_gb": 7.57,
+ "estimates": {
+  "sec_per_step": 5.989321410655975,
+  "gen_sec_per_row_gpu": 10.142513990402222,
+  "candidate_job_h": 0.06125204106171926,
+  "candidate_job_h_measured": 0.04353325174914466
+ },
+ "first_step_check": {
+  "lr_used": 1.6666666666666667e-06,
+  "gen_weight": 0.5,
+  "grad_norm": 0.08374794572591782,
+  "param_delta_norm_8_tensors": 0.0013772623082672908,
+  "ok": true
+ },
+ "done_upto": "REPORT",
+ "base_dev": {
+  "run_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/base_dev",
+  "mean": 0.0,
+  "task_means": {
+   "dev_move": 0.0,
+   "dev_scale": 0.0
+  }
+ },
+ "baseline_mean_items": {
+  "dev_move_000": 0.0,
+  "dev_move_001": 0.0,
+  "dev_scale_000": 0.0,
+  "dev_scale_001": 0.09758396784805545
+ },
+ "baseline_sd_items": {
+  "dev_move_000": 0.0,
+  "dev_move_001": 0.0,
+  "dev_scale_000": 0.0,
+  "dev_scale_001": 0.13800457080090006
+ },
+ "noise": {
+  "k": 2,
+  "run_scores": [
+   0.0,
+   0.048791983924027726
+  ],
+  "mean": 0.024395991962013863,
+  "sd_train": 0.034501142700225015,
+  "delta": 0.034501142700225015,
+  "range": 0.048791983924027726,
+  "seeds": [
+   1000,
+   1001
+  ]
+ },
+ "delta": {
+  "delta": 0.034501142700225015,
+  "source": "sd_train of the baseline replicates",
+  "k": 2,
+  "run_scores": [
+   0.0,
+   0.048791983924027726
+  ],
+  "mean": 0.024395991962013863,
+  "sd_train": 0.034501142700225015,
+  "range": 0.048791983924027726,
+  "seeds": [
+   1000,
+   1001
+  ]
+ },
+ "agent_session": "dcd9638f-cd79-4afc-b01f-de939ddb6402",
+ "last_memory": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/candidates/c002/code/memory.md",
+ "confirm_set": [
+  "c001"
+ ],
+ "confirm": {
+  "c001": {
+   "R": 1,
+   "D": -0.022919589964771517,
+   "D_per_seed": [
+    -0.022919589964771517
+   ],
+   "SE_train": 0.048791983924027726,
+   "SE_item": 0.01620285295508939,
+   "SE": 0.05141196494131331,
+   "z": 1.9599639845400536,
+   "ci_lo": -0.1236851896241815,
+   "ci_hi": 0.07784600969463847,
+   "per_task": {
+    "dev_move": {
+     "n": 2,
+     "D": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "dev_scale": {
+     "n": 2,
+     "D": -0.045839179929543034,
+     "ci_lo": -0.09167835985908607,
+     "ci_hi": 0.0
+    }
+   },
+   "m_comparisons": 1,
+   "mean_cand": 0.02587239395925621,
+   "mean_base": 0.048791983924027726
+  }
+ },
+ "selection": {
+  "selected": "c000",
+  "rule": "no confirmed candidate passed: fixed baseline",
+  "delta": 0.034501142700225015,
+  "confirm": {
+   "c001": {
+    "R": 1,
+    "D": -0.022919589964771517,
+    "D_per_seed": [
+     -0.022919589964771517
+    ],
+    "SE_train": 0.048791983924027726,
+    "SE_item": 0.01620285295508939,
+    "SE": 0.05141196494131331,
+    "z": 1.9599639845400536,
+    "ci_lo": -0.1236851896241815,
+    "ci_hi": 0.07784600969463847,
+    "per_task": {
+     "dev_move": {
+      "n": 2,
+      "D": 0.0,
+      "ci_lo": 0.0,
+      "ci_hi": 0.0
+     },
+     "dev_scale": {
+      "n": 2,
+      "D": -0.045839179929543034,
+      "ci_lo": -0.09167835985908607,
+      "ci_hi": 0.0
+     }
+    },
+    "m_comparisons": 1,
+    "mean_cand": 0.02587239395925621,
+    "mean_base": 0.048791983924027726
+   }
+  },
+  "note": "dev is the selection set; only P3's multi-seed formal retraining on test is independent"
+ },
+ "frozen": {
+  "cand": "c000",
+  "dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/frozen/c000",
+  "code_sha256": "d145eb47c67405743814b17ff0cd2f7dd1ba4b0794ea2212c19df5c1d3986f64"
+ },
+ "p3": {
+  "base_test": {
+   "status": "done",
+   "run_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/base_test"
+  },
+  "c000-s2000": {
+   "status": "done",
+   "run_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/formal_c000-s2000-g4"
+  }
+ },
+ "p3_stats": {
+  "base_test": 0.0,
+  "baseline_formal_runs": [
+   0.0
+  ]
+ }
+}

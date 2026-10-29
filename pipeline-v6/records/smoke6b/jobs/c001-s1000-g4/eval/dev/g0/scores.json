@@ -1,0 +1,129 @@
+{
+ "n": 3,
+ "task_means": {
+  "2d_geometric_transformation": 0.11144985800222262,
+  "shape_color_then_move": 0.0,
+  "shape_color_then_scale": 0.35
+ },
+ "mean": 0.1538166193340742,
+ "mean_note": "equal-weight mean of the task means",
+ "by_task": {
+  "2d_geometric_transformation": {
+   "n": 1,
+   "mean": 0.11144985800222262,
+   "sub_mean": {
+    "rotation_angle": 0.0,
+    "position_alignment": 0.012059602406223335,
+    "shape_fidelity": 0.75
+   },
+   "n_invalid": 0
+  },
+  "shape_color_then_move": {
+   "n": 1,
+   "mean": 0.0,
+   "sub_mean": {
+    "E_cell": 0.0,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "n_invalid": 0
+  },
+  "shape_color_then_scale": {
+   "n": 1,
+   "mean": 0.35,
+   "sub_mean": {
+    "E_cell": 1.0,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "n_invalid": 0
+  }
+ },
+ "n_invalid": 0,
+ "sub_mean": {
+  "E_cell": 0.5,
+  "F_cell": 0.0,
+  "F_transform": 0.0,
+  "rotation_angle": 0.0,
+  "position_alignment": 0.012059602406223335,
+  "shape_fidelity": 0.75
+ },
+ "version": {
+  "version": "analogy_grid v1.0 + VBVR-CustomEval 2d_geometric_transformation",
+  "analogy_grid_sha256": "a2c145ddcec83d47357a3f6a7f7bff90c58881e27e3b619d6ecfefaadec2a3da",
+  "geo_scorer_sha256": "bf7d6905d6dcf12165f304e4b3cc43186714bb1362ee82292ca6940084922d5b",
+  "cvlib_sha256": "05fc90a59beae304fcd750892480aa5c8b6b256404abb083a79e52f00cba8845"
+ },
+ "items": [
+  {
+   "id": "dev_geo_000",
+   "task": "2d_geometric_transformation",
+   "score": 0.11144985800222262,
+   "sub": {
+    "rotation_angle": 0.0,
+    "position_alignment": 0.012059602406223335,
+    "shape_fidelity": 0.75
+   },
+   "valid": true,
+   "categories": [
+    "wrong_position",
+    "wrong_rotation",
+    "outline_left"
+   ],
+   "gates": {
+    "ceiling": 1.0,
+    "colour_ok": true,
+    "outline_retained": 1.0,
+    "best_fit_deg": 131.0,
+    "position_err_px": 51.2
+   }
+  },
+  {
+   "id": "dev_move_000",
+   "task": "shape_color_then_move",
+   "score": 0.0,
+   "sub": {
+    "E_cell": 0.0,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "valid": true,
+   "categories": [
+    "E_wrong_colour",
+    "F_wrong",
+    "F_wrong_transform"
+   ],
+   "gates": {
+    "ceiling": 1.0,
+    "context_gate": 1.0,
+    "transform": {
+     "dy_gt": -30.0,
+     "dy_cand": -62.1
+    },
+    "n_objects": 6
+   }
+  },
+  {
+   "id": "dev_scale_000",
+   "task": "shape_color_then_scale",
+   "score": 0.35,
+   "sub": {
+    "E_cell": 1.0,
+    "F_cell": 0.0,
+    "F_transform": 0.0
+   },
+   "valid": true,
+   "categories": [
+    "F_missing"
+   ],
+   "gates": {
+    "ceiling": 1.0,
+    "context_gate": 1.0,
+    "transform": {
+     "reason": "E or F missing"
+    },
+    "n_objects": 5
+   }
+  }
+ ]
+}

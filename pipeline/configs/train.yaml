@@ -3,7 +3,7 @@
 # the ViT tile budget (one 448^2 tile per image: dynamic_image_size false).
 # lr: 6-step linear warmup counted from 1 (lr_k = peak*(k+1)/6), then cosine to the last step -- built by train_entry.py
 # (optim.warmup_ratio / optim.scheduler below are not used). Generation loss weight constant 0.5 (gen_warmup_steps 0).
-extends: ../../../src/internvlu-train/configs/v3/N0.yaml
+extends: /scratch/network/ssd2/junlin/ssl_mllm/internvlu-exp/src/internvlu-train/configs/v3/N0.yaml   # absolute: the pipeline is no longer inside internvlu-exp/exp/
 name: reactdata-v1
 vars:
   setting: reactdata

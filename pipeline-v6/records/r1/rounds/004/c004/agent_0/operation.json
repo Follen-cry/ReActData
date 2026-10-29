@@ -1,0 +1,35 @@
+{
+ "status": "completed",
+ "result": {
+  "ok": true,
+  "returncode": 0,
+  "wall_s": 37.238274574279785,
+  "resumed_from": "a9308895-7564-4691-a384-8fd94660f2a2",
+  "result": "I wrote candidate c004, which combines the best-looking selection rule for each task. It hasn't been run. I read the c003 section of `report.md` and a few c003 dev items, but not `results.json`, the analysis traces or the failure images.\n\n**What c003 showed:** it scored 0.1774 against the baseline's 0.1493. Its gain moved to a different task than c002's:\n\n| Candidate | Scale | Move |\n|---|---|---|\n| c002 | 0.246 | 0.172 |\n| c003 | 0.1425 | 0.2604 |\n\nScale did best when clips were drawn at random from the top 50% by `change_px`. Move did best with the 43 largest. Geo was about 0.13 in both.\n\n**c004 program:**\n- **Scale:** 43 clips drawn at random from the top 50% by `change_px`, as in c002.\n- **Move:** the 43 largest `change_px` clips, as in c003.\n- **Geo:** 42 clips drawn at random from the top 50%.\n- **Order:** one seeded mixed order, as before.\n- **Code:** the per-task fractions are now defaults in `databuilder.py`. A config-only change would have counted as a duplicate of c003.\n\n**Prediction:** scale 0.22 to 0.25, move 0.22 to 0.26, geo about 0.13, and a dev mean of about 0.20 to 0.21. If scale stays near 0.14, c002's scale gain was probably a lucky draw. If move falls to about 0.17, the move gain was too.\n\n`proposal.md` cites `dev_move_006`, `dev_move_007`, `dev_scale_020` and `dev_scale_021`, with numbers taken from `dev_items/c003.json`. `memory.md` is updated.",
+  "model_usage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 40,
+    "outputTokens": 15910,
+    "thinkingTokens": 2562,
+    "cacheReadInputTokens": 1032820,
+    "cacheCreationInputTokens": 86699,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 86699,
+    "webSearchRequests": 0,
+    "costUSD": 0.6092580000000001,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "models": [
+   "claude-sonnet-5-5"
+  ],
+  "cost_usd": 0.6092580000000001,
+  "num_turns": 10,
+  "session_id": "a9308895-7564-4691-a384-8fd94660f2a2",
+  "subtype": "success"
+ }
+}

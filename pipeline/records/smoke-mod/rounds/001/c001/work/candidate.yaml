@@ -1,0 +1,4 @@
+declared_class: schedule
+builder:
+  sub_frac: 0.7
+analysis: {}

@@ -1,0 +1,21 @@
+{
+ "protocol": "protocol.yaml",
+ "protocol_sha256": "27dbec46220140f86dee8816630cb92716a509f73c6b2ce5f34b25bafcbf2476",
+ "runner_sha256": "6d8525a952c016ae0ba53c13ce2fb1699bde925257075390e3613f6b5019fc05",
+ "api_sha256": "58a37b2d106193bd9f861366b0ada89478b9f8e17b4f1c809db059a78321dd6e",
+ "builder_agent_md_sha256": "230cbbd955b3b065125e728fc04f55a9c9f217e0250bf183316bc939b39040b5",
+ "data_build": {
+  "counts": {
+   "train_pool": 16,
+   "inner_probe": 32,
+   "dev": 100,
+   "test": 100
+  },
+  "from": "reactdata-v4 data"
+ },
+ "scorer": {
+  "version": "analogy_grid v1.0",
+  "analogy_grid_sha256": "a2c145ddcec83d47357a3f6a7f7bff90c58881e27e3b619d6ecfefaadec2a3da",
+  "cvlib_sha256": "05fc90a59beae304fcd750892480aa5c8b6b256404abb083a79e52f00cba8845"
+ }
+}

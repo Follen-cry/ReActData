@@ -1,0 +1,4 @@
+# v6 test candidate: the fixed baseline's data + loss probes every step and one generate probe (exercises tasks/reactdata/gpu_probes.py)
+declared_class: static
+builder: {}
+analysis: {}

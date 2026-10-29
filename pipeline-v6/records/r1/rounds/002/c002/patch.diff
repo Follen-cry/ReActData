@@ -1,0 +1,56 @@
+--- c001/databuilder.py
++++ c002/databuilder.py
+@@ -15,8 +15,10 @@
+         quota = dict(config.get("quota") or DEFAULT_QUOTA)
+         n = total_steps * ROWS_PER_STEP
+         order = []
++        frac = config.get("top_frac", 1.0)
+         for t in sorted(quota):
+-            ids = sorted(c["clip_id"] for c in pool["clips"] if c["task"] == t)
++            cl = sorted((c for c in pool["clips"] if c["task"] == t), key=lambda c: (-c["change_px"], c["clip_id"]))
++            ids = sorted(c["clip_id"] for c in cl[:max(quota[t], int(round(len(cl) * frac)))])
+             order += rng.sample(ids, min(quota[t], len(ids)))
+         rng.shuffle(order)
+         self.order = order[:n]
+--- c001/candidate.yaml
++++ c002/candidate.yaml
+@@ -1,7 +1,8 @@
+ declared_class: static
+ builder:
++  top_frac: 0.5
+   quota:
+-    shape_color_then_scale: 56
+-    shape_color_then_move: 56
+-    2d_geometric_transformation: 16
++    shape_color_then_scale: 43
++    shape_color_then_move: 43
++    2d_geometric_transformation: 42
+ analysis: {}
+--- c001/proposal.md
++++ c002/proposal.md
+@@ -1,14 +1,14 @@
+ ## Evidence
+-Only c000 (baseline) exists. Read report.md, results.json, dev_items/c000.json, baseline_replicates.json, analysis_traces/c000.json (only mean loss, no probes). Baseline dev 0.149 (replicates 0.068-0.179, sd 0.043). Per task: geo 0.116 with rotation_angle 0.036 and position_alignment 0.050 (shape_fidelity 0.563 already high); move 0.164 (E_cell 0.22, F_transform 0.20); scale 0.168 (E_cell 0.16, F_transform 0.36). Items: dev_geo_000 scored 0.109 with rotation 0.0 and position 0.006 and all of wrong_rotation/wrong_position/outline_left; dev_geo_001 0.114 (rotation 0.0, position 0.020, shape 0.75), so geo gains come only from shape fidelity, which is already learned; dev_geo_002 0.041 (deformed). Baseline sd on geo items is large (e.g. dev_geo_000 sd 0.138). Error categories on the analogy tasks (E_wrong_colour 30/23, F_wrong_transform 29/21 of 50) are the kind of discrete rule errors that more examples can fix. I did not inspect failure images in detail.
++Read report.md, c001 analysis trace (per-task loss, 4 loss probes, generate probe) and dev summaries. c001 (quota 56/56/16) scored 0.1245 vs baseline 0.1493: D=-0.002 vs the replicate-mean comparison in results (CI [-0.026,+0.021]); geo -0.015 (0.092; position_alignment 0.005, rotation 0.016), move -0.005 (0.138), scale +0.014 (0.143). So moving 27 rows from geo to analogy tasks did not help: the task mix lever is weak or noise-dominated. Failure categories rose for analogy tasks in c001: extra_objects 37 (scale) and 32 (move) vs 17 / 19 in c000, blank_or_repainted 8 each, context_damaged 14 on scale vs 3; i.e. the model sometimes repaints or adds objects instead of making a clean edit. Probe losses: geo probe loss rose from 0.0075 (step 0) to 0.0138 (step 6) while move fell 0.0088->0.0062 and scale 0.0052->0.0045 - geo is not being learned; analogy tasks learn slowly. Generate probe after step 7: scores are bimodal (e.g. move_s10_00000357 score 1.0, scale_s20_00000221 0.78, but many 0.0 such as scale_s20_00000066 and move_s00_00000001), so success is all-or-nothing per instance. Dev items quoted from c000: dev_geo_000 0.109 (rotation 0.0, position 0.006), dev_geo_001 0.114, dev_geo_002 0.041.
+ 
+ ## Hypothesis
+-In 8 steps the geometric rotation/position skill is essentially not learned (about 0.04 sub-scores) so the 43 geo rows are mostly wasted, while the analogy tasks (colour recolouring of E, scale/move of F) have partial credit and visible learnable structure. Moving rows from geo to scale/move (56/56/16) should raise the scale and move means more than it costs geo (geo has little to lose; shape fidelity should survive with 16 rows).
++Clips with a large edit (large change_px: bigger added/moved objects, bigger rotation displacement) give a stronger, less ambiguous gradient toward "the final frame differs from F0 in a specific way", and discourage the near-copy / repaint failures; small-edit clips are close to F0 and teach mostly identity. With balanced quota (the mix lever showed no gain) selecting the top 50% by change_px in each task should yield better learning per row.
+ 
+ ## Program
+-Started from c000 (baseline). databuilder.py: quota scale 56 / move 56 / geo 16 (from candidate.yaml), clips drawn uniformly at random without replacement within a task, one seeded shuffle so every step mixes tasks. Rule-based, so it generalises across seeds. declared_class: static.
++Started from c001 code (the databuilder generalised with `top_frac`), but quota reset to the baseline-like 43/43/42. For each task, the clips are ranked by change_px and 43/43/42 are drawn uniformly at random from the top 50% (80 clips) of that task; mixed shuffled order. Rule-based, seed-generalising. analysis.py unchanged.
+ 
+ ## What analysis.py measures
+-Per-step mean training loss per task, grad norm; loss probe on all 32 inner-probe clips after steps 0,2,4,6 (per-task mean loss, shows whether each task's loss falls); one generate probe on all probe clips after step 7 (per-task score and sub-scores). Next step: if the scale/move probe losses fall faster than geo and the generate probe is higher for them, the reallocation works; if geo probe score collapses, 16 rows is too few.
++Per-task training loss per step, loss probes on all inner-probe clips after steps 0,2,4,6 and a generate probe after step 7 (as c001). Read: whether probe losses decrease more than in c001 per task, and whether the generate probe has fewer 0.0 failures; compare extra_objects counts with c000 (17/19) and c001 (37/32).
+ 
+ ## Expected result
+-Scale +0.03 to +0.06, move +0.03 to +0.06, geo -0.02 to 0 relative to baseline; dev mean about +0.02 to +0.04 (within or near noise, sd 0.043). Refuted if scale/move do not improve despite 30% more rows, i.e. more rows of these tasks do not help in 8 steps.
++Scale and move +0.02 to +0.05 each, geo around 0 to +0.02, dev mean +0.02 to +0.03 over the baseline; fewer extra_objects/blank failures. Refuted if the dev mean is at or below baseline and failure categories do not change, which would say edit size does not matter either at this budget.
+--- c001/memory.md
++++ c002/memory.md
+@@ -1 +1,2 @@
+-c001: quota 56/56/16 (scale/move/geo), random within task, mixed order. Based on c000. Analysis logs per-task loss + probes. Next: read probe traces to see which task learns.
++c001: quota 56/56/16 -> 0.1245 vs base 0.1493 (no gain; geo probe loss rose, extra_objects up). Task mix is weak lever.
++c002: quota 43/43/42, clips from top 50% change_px per task. Next: if no gain, try curriculum/order or geo-only focus, or smallest-edit-first.

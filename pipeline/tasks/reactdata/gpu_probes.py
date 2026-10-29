@@ -1,13 +1,18 @@
 """GPU probe effects; RNG/model-mode restoration stays in one explicit scope."""
 import os
 import time
+import zlib
 import torch
 from experiment.runtime.io import read_jsonl, write_jsonl
 from internvlu.processing_internvlu import DropCondType
 from internvlu_train.evaluation.runner import evaluate_set
 from internvlu_train.losses.objective import gen_term
 
-def execute_probes(reqs, step, *, model, item_builder, materializer, predictor, probe_rows, dist, gather, run_dir, cost, autocast):
+def crc(s: str) -> int:
+    return zlib.crc32(s.encode())          # same per-clip noise seed as runner/train_entry.crc
+
+
+def execute_probes(reqs, step, *, model, item_builder, materializer, collator, predictor, probe_rows, dist, gather, run_dir, cost, autocast):
     results = []
     t0 = time.time()
     cpu, cuda = torch.get_rng_state(), torch.cuda.get_rng_state_all()
@@ -20,7 +25,7 @@ def execute_probes(reqs, step, *, model, item_builder, materializer, predictor, 
                     for idx in range(dist.rank, len(q["items"]), dist.world_size):
                         it = q["items"][idx]
                         item = item_builder.build(materializer.row(it, f"probe|{it['clip_id']}"), DropCondType.none)
-                        batch = self.collator([item]).to(dist.device)
+                        batch = collator([item]).to(dist.device)
                         h = crc(f"probe:{it['clip_id']}")
                         torch.manual_seed(h)
                         torch.cuda.manual_seed(h)

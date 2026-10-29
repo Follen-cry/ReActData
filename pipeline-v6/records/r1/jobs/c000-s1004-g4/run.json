@@ -1,0 +1,32 @@
+{
+ "run_id": "c000-s1004-g4",
+ "run_dir": "/scratch/network/ssd/junlin/reactdata-v6/runs/r1/jobs/c000-s1004-g4",
+ "candidate_dir": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/seeds/fixed_f0_final",
+ "run_seed": 1004,
+ "steps": 8,
+ "evals": [
+  {
+   "name": "dev",
+   "file": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/manifests/dev.jsonl",
+   "seeds": [
+    0
+   ]
+  }
+ ],
+ "max_eval_rows": null,
+ "protocol_sha256": "da3b4e3673680d5ee816d0001f0789e1fba1c680bb6f4eb2133652898661316c",
+ "gpus": 4,
+ "resources": {
+  "exp": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6",
+  "api": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/api",
+  "data": "/scratch/network/ssd/junlin/reactdata-v6/data",
+  "manifests": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/manifests",
+  "runs": "/scratch/network/ssd/junlin/reactdata-v6/runs",
+  "protocol": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/protocol.yaml"
+ },
+ "overrides": [
+  "optim.lr=2.0e-5",
+  "optim.gen_decoder_lr=1.0e-4"
+ ],
+ "warmup_steps": 3
+}

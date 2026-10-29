@@ -10,10 +10,15 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from experiment.runtime.io import sha256_file, md5_file, sha256_tree, sha256_json, read_jsonl, write_jsonl, write_json, read_json, now
 
-EXP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))          # internvlu-exp/exp/reactdata-v1
-REPO = os.path.dirname(os.path.dirname(EXP))                               # internvlu-exp
+EXP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))          # this pipeline/ directory
+# The pipeline used to live at internvlu-exp/exp/<name>/ and derived REPO from its own location; a standalone checkout
+# (e.g. the ReActData repo) has to name the internvlu-exp repo and its scratch root explicitly.
+_DERIVED_REPO = os.path.dirname(os.path.dirname(EXP))
+REPO = os.environ.get("REACTDATA_REPO") or (
+    _DERIVED_REPO if os.path.isdir(os.path.join(_DERIVED_REPO, "src", "internvlu-train"))
+    else "/scratch/network/ssd2/junlin/ssl_mllm/internvlu-exp")                  # internvlu-exp
 SSL = os.path.dirname(REPO)                                                # ssl_mllm
-SCRATCH = "/scratch/network/ssd/junlin/reactdata-v5"
+SCRATCH = os.environ.get("REACTDATA_SCRATCH", "/scratch/network/ssd/junlin/reactdata-v5")
 DATA = os.path.join(SCRATCH, "data")
 RUNS = os.path.join(SCRATCH, "runs")
 FRAMES = os.path.join(DATA, "frames512")

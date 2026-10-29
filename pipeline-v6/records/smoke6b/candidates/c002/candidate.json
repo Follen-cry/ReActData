@@ -1,0 +1,26 @@
+{
+ "cand_id": "c002",
+ "code_sha256": "a056b8939374b27fa346fa678dde613bc5ca5b2f02904dcf473508ef14a58d1d",
+ "config_sha256": "a75ad5422232c56d2298e15254b7a73d26c30add68dcb00054a3f3b002f88efe",
+ "templates_sha256": "1ff22c8cbba8eba4558ec48dd5979d6d8cfa9d1dd13b543e963d1f66baa7d8df",
+ "protocol_sha256": "8d8a077cad75bba04bb1a15843f3541d4df8df0fb8cdb59627bfb8fb7dcbd15b",
+ "round": 2,
+ "parent": "c001",
+ "declared_class": "static",
+ "class_label": "schedule",
+ "agent": [
+  {
+   "ok": true,
+   "models": [
+    "claude-sonnet-5-5"
+   ],
+   "cost_usd": 0.32810110000000003,
+   "num_turns": 10,
+   "wall_s": 44.31785273551941,
+   "session_id": "9ff9dffb-5e8b-476a-9eb5-c215208753b8",
+   "replayed_from": null,
+   "resumed_from": "9ff9dffb-5e8b-476a-9eb5-c215208753b8"
+  }
+ ],
+ "status": "checked"
+}

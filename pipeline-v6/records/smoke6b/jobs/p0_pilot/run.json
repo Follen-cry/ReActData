@@ -1,0 +1,30 @@
+{
+ "run_id": "p0_pilot",
+ "run_dir": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/p0_pilot",
+ "candidate_dir": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/seeds/fixed_f0_final",
+ "resources": {
+  "exp": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6",
+  "api": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/api",
+  "data": "/scratch/network/ssd/junlin/reactdata-v6/data",
+  "manifests": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/manifests",
+  "runs": "/scratch/network/ssd/junlin/reactdata-v6/runs",
+  "protocol": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/protocol_v6.yaml"
+ },
+ "run_seed": 1,
+ "steps": 4,
+ "evals": [
+  {
+   "name": "dev",
+   "file": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/manifests/dev.jsonl",
+   "seeds": [
+    0
+   ]
+  }
+ ],
+ "max_eval_rows": 8,
+ "overrides": [
+  "optim.lr=2.0e-5",
+  "optim.gen_decoder_lr=1.0e-4"
+ ],
+ "warmup_steps": 3
+}

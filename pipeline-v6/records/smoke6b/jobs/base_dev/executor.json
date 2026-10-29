@@ -1,0 +1,13 @@
+{
+ "run_json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/base_dev/run.json",
+ "run_dir": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/base_dev",
+ "slot": {
+  "name": "B",
+  "node": "torrnode12",
+  "gpus": "4,5,6,7",
+  "port": 29792
+ },
+ "start": 1793211523.2028964,
+ "attempt": 0,
+ "launch_pending": false
+}

@@ -1,0 +1,87 @@
+--- c001/databuilder.py
++++ c002/databuilder.py
+@@ -1,26 +1,27 @@
+-"""c001: task-mixture shift. Quota 56 scale / 56 move / 16 geo, clips drawn uniformly within task, mixed order.
++"""c002: move-heavy mixture, task blocks with move last. Fractions 1/4 scale, 1/8 geo, 5/8 move of the n = steps x 16 rows.
+ 
+-Derived from the fixed baseline (c000): same random-within-task draw and seeded shuffle, only the quota changes.
++Derived from c001 (random-within-task draw). The quota is scaled to the actual number of rows (c001's fixed 56/56/16
++quota summed to 128 and was silently truncated when the run had fewer rows). Order: scale rows, then geo, then move;
++the first steps are mostly scale, the last steps are all move.
+ """
+ import random
+ 
+ ROWS_PER_STEP = 16
+-QUOTA = {"shape_color_then_scale": 56, "shape_color_then_move": 56, "2d_geometric_transformation": 16}
++FRAC = {"shape_color_then_scale": 0.25, "2d_geometric_transformation": 0.125, "shape_color_then_move": 0.625}
++BLOCK_ORDER = ["shape_color_then_scale", "2d_geometric_transformation", "shape_color_then_move"]
+ 
+ 
+ class Builder:
+     def __init__(self, config, pool, seed, total_steps):
+         rng = random.Random(f"{seed}:subset")
++        n = total_steps * ROWS_PER_STEP
+         tasks = sorted({c["task"] for c in pool["clips"]})
+-        n = total_steps * ROWS_PER_STEP
+-        quota = dict(config.get("quota", QUOTA)) if isinstance(config, dict) else dict(QUOTA)
+-        if sum(quota.get(t, 0) for t in tasks) != n:
+-            quota = dict(QUOTA)
++        quota = {t: int(round(FRAC.get(t, 0.0) * n)) for t in tasks}
++        quota[BLOCK_ORDER[-1]] += n - sum(quota.values())
+         order = []
+-        for t in tasks:
++        for t in BLOCK_ORDER:
+             ids = sorted(c["clip_id"] for c in pool["clips"] if c["task"] == t)
+             order += rng.sample(ids, quota[t])
+-        rng.shuffle(order)
+         self.order = order
+         self.pos = 0
+ 
+--- c001/candidate.yaml
++++ c002/candidate.yaml
+@@ -1,8 +1,4 @@
+-# c001: task mixture 56/56/16 (scale/move/geo). declared_class: static
++# c002: move-heavy (5/8 move, 1/4 scale, 1/8 geo), blocks scale -> geo -> move. declared_class: static
+ declared_class: static
+-builder:
+-  quota:
+-    shape_color_then_scale: 56
+-    shape_color_then_move: 56
+-    2d_geometric_transformation: 16
++builder: {}
+ analysis: {}
+--- c001/proposal.md
++++ c002/proposal.md
+@@ -1,18 +1,18 @@
+-# c001
++# c002
+ 
+-Started from c000 (fixed baseline; only candidate so far).
++Started from c001 (best valid by dev mean, 0.1538 vs baseline 0.1576 on one run). Analysis.py unchanged (per-task loss, 32-clip loss probe every step, generate probe at step >= 4).
+ 
+ ## Evidence
+-Read report.md, results.json, baseline_replicates.json, the baseline code and plugin API. Only c000 exists, so no analysis traces compare programs. c000 dev: scale 0.270 (E_cell 0.744, F_cell 0.0, F_transform 0.038), move 0.092 (E_cell 0.0, F_cell 0.0, F_transform 0.367), geo 0.111 (rotation_angle 0.0, position_alignment 0.011, shape_fidelity 0.75). Item level: dev_scale_000 baseline mean 0.31 (sd 0.057), dev_move_000 0.046 (sd 0.065), dev_geo_000 0.056 (sd 0.079). Geo rotation sub-score is exactly 0 and the geo score comes almost entirely from shape fidelity, which the untrained model already has; this suggests geo rotation is not learnable in a few rows. Move's E_cell (recolouring D as A became B) is 0, whereas scale's E_cell is already 0.74, so the recolour rule is learnable and shared by scale and move. Baseline training loss per step is flat (0.012, 0.011, 0.022, 0.010). Note the report's numbers come from a 4-step, 2-seed setup, so noise estimates are rough.
++Read report.md, results.json, dev_items/c001.json, analysis_traces/c001.json. The dev feedback is only three items (one per task), so the per-task numbers are very noisy. c001 vs baseline replicate mean: dev_scale_000 0.35 vs 0.31 (E_cell 1.0, F_missing, F_cell 0, F_transform 0); dev_move_000 0.0 vs 0.046 (E_wrong_colour, F_wrong, all sub-scores 0; baseline had F_transform 0.367); dev_geo_000 0.1114 vs 0.056 (rotation_angle 0.0, shape_fidelity 0.75 unchanged). Scale's E_cell is solved (1.0), move's is not (0.0) although c001 gave move 56/128 of the planned quota. The c001 probe losses (mean over inner-probe clips, per task) rose from step 0 to step 2 (move 0.0088 -> 0.0163, scale 0.0052 -> 0.0137, geo 0.0075 -> 0.0161) and fell at step 3 (0.0083 / 0.0068 / 0.0073 ... per-clip values e.g. move_s12_00000317 0.0200 -> 0.0373 -> 0.0266). So early steps perturb the model and later steps recover; the order of the last steps matters. Also c001 had a bug: its fixed quota summed to 128 but the run has 64 rows (4 steps x 16), so it drew a truncated shuffle (rows per task at step 0: scale 10, move 5, geo 1).
+ 
+ ## Hypothesis
+-Rows spent on geo are largely wasted (rotation 0.0, little headroom within 128 rows), while scale and move share the colour-then-transform structure and have the headroom (move E_cell 0.0, scale F_cell 0.0). Moving rows from geo to scale and move should raise those two task means more than it can cost geo, which has little to lose (shape_fidelity is already 0.75).
++The weak point is move (E colour wrong, F not moved). Recolouring is learnable from a handful of rows (scale E_cell went 0.744 -> 1.0), and the loss is lowest right after the recovery in the final step. Giving move 5/8 of the rows and placing the move block last, so the final updates before evaluation are all on move, should give move its best chance of learning the recolour + move rule, at the cost of geo (1/8) and scale (1/4), which are already at plateau (geo rotation 0.0 under every program so far; scale E_cell 1.0).
+ 
+ ## Program
+-databuilder.py: quota 56 scale / 56 move / 16 geo, clips drawn uniformly without replacement within each task (seeded, so it is valid for any seed), then one seeded shuffle so every step mixes tasks. Same as c000 except the quota. declared_class static.
++databuilder.py: row counts are fractions of the actual number of rows: scale 1/4, geo 1/8, move 5/8 (64 rows: 16/8/40). Clips are drawn uniformly at random without replacement within each task (seeded, valid for any seed). Order is in task blocks: scale, then geo, then move (no shuffle), so the last steps are all move. Started from c001; the change is the quota, the scaling to n and the blocked order.
+ 
+ ## What analysis.py measures
+-Per-step per-task training loss and row counts, grad norm, and a loss probe on all 32 inner-probe clips after every step (8 probes), reported as the per-task mean. A generate probe on all 32 inner-probe clips at step 4 or later gives per-task scores. Next step: if probe loss on scale and move falls more than in a baseline run and the geo probe loss does not rise much, the mixture shift works. If the generate-probe score on geo drops, the shift is hurting geo.
++Per-step per-task training loss and row counts, grad norm, a loss probe on all 32 inner-probe clips after each step, and a generate probe at step >= 4 for per-task scores. Read next step: does move probe loss decrease from its step-0 value by the last step, and do the scale and geo probe losses rise after the move block (forgetting)?
+ 
+ ## Expected result
+-Scale +0.03 to +0.08, move +0.03 to +0.06, geo -0.03 to 0. Dev mean about +0.02 to +0.04. It is refuted if the dev mean is within noise (about 0.06) or if geo falls by more than the gains elsewhere.
++Move +0.05 to +0.12 (from 0.09 baseline / 0.0 in c001; E_cell above 0), scale -0.05 to 0 (fewer rows, forgetting risk), geo about 0 (+-0.05). Dev mean about +0.01 to +0.04 over baseline. Refuted if move stays at 0 with 40 move rows, which would show that the move rule is not learnable with this budget and rows should go elsewhere.
+--- c001/memory.md
++++ c002/memory.md
+@@ -1 +1,3 @@
+-c001: quota 56/56/16 scale/move/geo, random within task. Started from c000. Check probe losses per task next step.
++c001: quota 56/56/16 -> dev 0.1538 (base 0.1576): scale 0.35, move 0.0, geo 0.111. Dev feedback is only 3 items (n=1 per task), very noisy.
++c001 bug: fixed quota summed 128 though run had 64 rows (truncated). c002 scales fractions to n.
++c002: move-heavy 5/8, scale 1/4, geo 1/8, blocks scale->geo->move.

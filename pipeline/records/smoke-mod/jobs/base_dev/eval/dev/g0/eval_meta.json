@@ -1,0 +1,9 @@
+{
+ "name": "dev",
+ "seed": 0,
+ "mean": 0.0,
+ "n": 4,
+ "n_invalid": 0,
+ "gen_wall_s": 11.65342092514038,
+ "world": 4
+}

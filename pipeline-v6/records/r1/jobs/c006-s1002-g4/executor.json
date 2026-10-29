@@ -1,0 +1,13 @@
+{
+ "run_json": "/scratch/network/ssd/junlin/reactdata-v6/runs/r1/jobs/c006-s1002-g4/run.json",
+ "run_dir": "/scratch/network/ssd/junlin/reactdata-v6/runs/r1/jobs/c006-s1002-g4",
+ "slot": {
+  "name": "C",
+  "node": "torrnode14",
+  "gpus": "4,5,6,7",
+  "port": 29793
+ },
+ "start": 1793222924.436933,
+ "attempt": 0,
+ "launch_pending": false
+}

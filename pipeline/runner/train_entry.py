@@ -222,7 +222,7 @@ class DynTrainer(Trainer):
     # -- probes (all ranks)
     def _run_probes(self, requests, step):
         from tasks.reactdata.gpu_probes import execute_probes
-        return execute_probes(requests, step, model=self.model, item_builder=self.ib, materializer=self.mat,
+        return execute_probes(requests, step, model=self.model, item_builder=self.ib, materializer=self.mat, collator=self.collator,
             predictor=self.probe_predictor, probe_rows=self.probe_rows, dist=self.dist, gather=self._gather,
             run_dir=self.run["run_dir"], cost=self.cost, autocast=self._autocast)
     def fit(self):

@@ -1,0 +1,8 @@
+# c001: task mixture 56/56/16 (scale/move/geo). declared_class: static
+declared_class: static
+builder:
+  quota:
+    shape_color_then_scale: 56
+    shape_color_then_move: 56
+    2d_geometric_transformation: 16
+analysis: {}

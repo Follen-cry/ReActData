@@ -1,0 +1,3 @@
+# eval_format = exactly the dev/test text; subgoal is used only for rows with an intermediate target.
+eval_format: "{wrapped_description}"
+subgoal: "Generate {target_spec}. {description}"

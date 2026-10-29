@@ -1,0 +1,11 @@
+declared_class: static
+builder:
+  top_frac:
+    shape_color_then_scale: 1.0
+    shape_color_then_move: 0.27
+    2d_geometric_transformation: 0.5
+  quota:
+    shape_color_then_scale: 43
+    shape_color_then_move: 43
+    2d_geometric_transformation: 42
+analysis: {}

@@ -1,0 +1,161 @@
+{
+ "version": 1,
+ "role": "builder",
+ "phase": "P2",
+ "sections": [
+  "analysis_traces",
+  "api",
+  "candidates",
+  "dev_items",
+  "failures",
+  "instructions",
+  "results",
+  "train_examples"
+ ],
+ "request": {
+  "round_dir": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/rounds/002/c002",
+  "entries": [
+   {
+    "id": "c000",
+    "role": "fixed_baseline",
+    "status": "trained",
+    "candidate_dir": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/seeds/fixed_f0_final",
+    "run_dir": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1000-g4",
+    "seeds": [
+     0
+    ],
+    "cost": {
+     "rows": 64,
+     "unique_clips": 64,
+     "repeated_rows": 0,
+     "max_clip_uses": 1,
+     "vit_images": 64,
+     "vit_tokens": 16384,
+     "seq_tokens": 30677,
+     "train_gpu_s": 92.749192237854,
+     "probe_gpu_s": 0.0,
+     "eval_gpu_s": 41.06964111328125,
+     "plugin_wall_s": 0.002612590789794922
+    },
+    "audit": null,
+    "comparison": null,
+    "error": null
+   },
+   {
+    "id": "c001",
+    "role": "agent",
+    "status": "trained",
+    "candidate_dir": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/candidates/c001/code",
+    "run_dir": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c001-s1000-g4",
+    "seeds": [
+     0
+    ],
+    "cost": {
+     "rows": 64,
+     "unique_clips": 64,
+     "repeated_rows": 0,
+     "max_clip_uses": 1,
+     "vit_images": 64,
+     "vit_tokens": 16384,
+     "seq_tokens": 30755,
+     "train_gpu_s": 167.14933395385742,
+     "probe_gpu_s": 60.10610294342041,
+     "eval_gpu_s": 57.84415149688721,
+     "plugin_wall_s": 0.005166530609130859
+    },
+    "audit": {
+     "mi_bits": null,
+     "p_perm": 1.0,
+     "flag": false,
+     "templates": {
+      "eval_format": 64
+     }
+    },
+    "comparison": {
+     "n": 3,
+     "D": 0.016690166943980598,
+     "SE": 3.469620437312722e-18,
+     "ci_lo": 0.0166901669439806,
+     "ci_hi": 0.0166901669439806,
+     "mean_a": 0.1538166193340742,
+     "mean_b": 0.1371264523900936,
+     "per_task": {
+      "dev_geo": {
+       "n": 1,
+       "D": 0.05588304524985835,
+       "ci_lo": 0.05588304524985835,
+       "ci_hi": 0.05588304524985835
+      },
+      "dev_move": {
+       "n": 1,
+       "D": -0.04584323685398044,
+       "ci_lo": -0.04584323685398044,
+       "ci_hi": -0.04584323685398044
+      },
+      "dev_scale": {
+       "n": 1,
+       "D": 0.040030692436063886,
+       "ci_lo": 0.040030692436063886,
+       "ci_hi": 0.040030692436063886
+      }
+     },
+     "reference": "replicate_mean",
+     "D_over_sd_train": 0.5768257001690381
+    },
+    "error": null
+   }
+  ],
+  "pool_stats": {
+   "example_clips": [
+    "scale_s00_00000016",
+    "move_s00_00000042",
+    "geo_t00_00000045"
+   ],
+   "summary": {
+    "tasks": [
+     "shape_color_then_scale",
+     "shape_color_then_move",
+     "2d_geometric_transformation"
+    ],
+    "n_clips": 480,
+    "clips_per_task": {
+     "shape_color_then_scale": 160,
+     "shape_color_then_move": 160,
+     "2d_geometric_transformation": 160
+    },
+    "inner_probe_clips_per_task": {
+     "shape_color_then_scale": 11,
+     "shape_color_then_move": 11,
+     "2d_geometric_transformation": 10
+    },
+    "pixel_statistics": "fg_area = [F0, final] foreground pixels at 256x256 (|pixel - border median| > 25); change_px = pixels whose max channel |final - F0| > 40 at 256x256",
+    "run_budget": "128 rows = 8 steps x 16, every clip at most once (one epoch), F0 -> final only",
+    "dev": "50 items per task (dev_scale_*, dev_move_*, dev_geo_*: new instances of the three training tasks); dev score = equal-weight mean of the three task means"
+   }
+  },
+  "notes": [
+   "You are writing candidate c002 (round 2, 1 of 1 this round). Your /work starts as a copy of c001 (the best valid program by dev mean so far).",
+   "Search budget: this is new candidate 2 of 6 in this run (4 left after this one); round 2 of 2 (0 rounds left after this one); about 5.64 h of wall time left. The search does not stop early when scores plateau.",
+   "Training budget per run: 4 optimizer steps x 16 rows from the common initialization; seed 1000.",
+   "Dev generation seeds S = [0]; dev numbers are selection-biased; the test set is never shown.",
+   "Training noise (measured): the fixed baseline trained with 2 different run seeds scored 0.158, 0.117 on dev (sd 0.029). A screening result is ONE run: differences smaller than about 2 x 0.029 are indistinguishable from noise. After the search the top 1 candidates are retrained on 1 more seeds and compared with the baseline on the same seeds; only that decides. Do not spend candidates on replicates (changing only a seed / salt / shuffle is a duplicate and is not trained)."
+  ],
+  "instructions": "BUILDER_AGENT_v6.md",
+  "gallery_ids": [
+   "c000",
+   "c001"
+  ],
+  "baseline_items": [
+   {
+    "dev_geo_000": 0.055566812752364275,
+    "dev_move_000": 0.04584323685398044,
+    "dev_scale_000": 0.3099693075639361
+   },
+   {
+    "dev_geo_000": 0.07858334021223981,
+    "dev_move_000": 0.06483212730198123,
+    "dev_scale_000": 0.05661194815426762
+   }
+  ]
+ }
+}

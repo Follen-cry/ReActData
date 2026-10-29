@@ -1,0 +1,29 @@
+{
+ "load_wall_s": 6.1266770362854,
+ "world_size": 4,
+ "plugin_calls": 18,
+ "rows": 128,
+ "vit_images": 128,
+ "seq_tokens": 64130,
+ "train_wall_s": 43.87130260467529,
+ "probe_wall_s": 0.0,
+ "plugin_wall_s": 0.005478858947753906,
+ "unique_clips": 128,
+ "max_clip_uses": 1,
+ "repeated_rows": 0,
+ "evals": {
+  "dev/g0": {
+   "name": "dev",
+   "seed": 0,
+   "mean": 0.13362424684685684,
+   "n": 150,
+   "n_invalid": 3,
+   "gen_wall_s": 387.4619708061218,
+   "world": 4
+  }
+ },
+ "vit_tokens": 32768,
+ "train_gpu_s": 175.48521041870117,
+ "probe_gpu_s": 0.0,
+ "eval_gpu_s": 1549.8478832244873
+}

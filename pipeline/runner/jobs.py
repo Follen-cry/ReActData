@@ -61,6 +61,9 @@ def launch(slot: Slot, run_json: str) -> Dict:
             os.remove(os.path.join(d, f))
     env = (f"PYTHONPATH={TRAIN_SRC}:{os.path.dirname(TRAIN_SRC)} CUDA_VISIBLE_DEVICES={slot.gpus} "
            f"TOKENIZERS_PARALLELISM=false PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True OMP_NUM_THREADS=8")
+    for k in ("REACTDATA_REPO", "REACTDATA_SCRATCH"):     # path overrides (runner/common.py) must reach the remote job too
+        if os.environ.get(k):
+            env += f" {k}={shlex.quote(os.environ[k])}"
     inner = (f"cd {shlex.quote(EXP)} && {env} {TORCHRUN} --nproc_per_node={len(slot.gpus.split(','))} "
              f"--master_port {slot.port} runner/train_entry.py --spec {shlex.quote(run_json)} >> {shlex.quote(d)}/train.log 2>&1; "
              f"echo $? > {shlex.quote(d)}/exit_code")

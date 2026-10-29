@@ -1,0 +1,6 @@
+{
+ "md5_overlap": [],
+ "param_dup": [],
+ "n_checked": 812,
+ "note": "dev/test rows reused from reactdata-v0/v1 were isolation-checked against their own train pools there (manifests/isolation_report.json of v0/v1); here md5 covers every split, parameters cover rows with raw dirs"
+}

@@ -1,0 +1,35 @@
+{
+ "status": "completed",
+ "result": {
+  "ok": true,
+  "returncode": 0,
+  "wall_s": 46.9171998500824,
+  "resumed_from": null,
+  "result": "I wrote candidate c001: it shifts the task mix to 56 scale / 56 move / 16 geo rows. Nothing has been run or trained yet.\n\n**What the evidence covers.** Only the baseline c000 has results, and the report describes a 4-step, 2-seed setup rather than this 8-step run. I did not open `/input/dev_items/`, `/input/analysis_traces/`, `/input/failures/` or the per-item files beyond `baseline_replicates.json`. The proposal cites only `dev_scale_000`, `dev_move_000` and `dev_geo_000`, and those come from `baseline_replicates.json`.\n\n**The hypothesis.** Geo rotation scores exactly 0.0 and geo's score is almost all shape fidelity (0.75), which the model already has, so geo rows probably buy little. Scale and move share the recolour-then-transform structure and have headroom. Move's E_cell is 0.0, and scale's E_cell is already 0.744, so the recolour step is learnable.\n\n**What the files do:**\n- **`databuilder.py`:** same as c000 except for the quota. Clips are drawn at random within each task (seeded, so it holds for any seed), then shuffled so every step mixes tasks.\n- **`analysis.py`:**\n  - It logs per-task training loss, row counts and grad norm each step.\n  - It requests a loss probe on all 32 inner-probe clips after every step.\n  - It requests one generate probe on the same clips at step 4 or later.\n- **`candidate.yaml`:** declares the program as `static` and holds the quota.\n- **`proposal.md` and `memory.md`:** both are written. The proposal starts from c000 and contains all five required sections.\n\n**Expected result.** Scale +0.03 to +0.08, move +0.03 to +0.06, geo −0.03 to 0, so the dev mean should rise by about 0.02 to 0.04. The proposal says it is refuted if the dev mean stays within noise (about 0.06) or if geo's drop outweighs the gains elsewhere.",
+  "model_usage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 8,
+    "outputTokens": 4771,
+    "cacheReadInputTokens": 57529,
+    "cacheCreationInputTokens": 25678,
+    "webSearchRequests": 0,
+    "costUSD": 0.1561909,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 647,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 25678,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "models": [
+   "claude-sonnet-5-5"
+  ],
+  "cost_usd": 0.1561909,
+  "num_turns": 13,
+  "session_id": "9ff9dffb-5e8b-476a-9eb5-c215208753b8",
+  "subtype": "success"
+ }
+}

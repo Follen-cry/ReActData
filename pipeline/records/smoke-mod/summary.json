@@ -1,0 +1,106 @@
+{
+ "run_id": "smoke-mod",
+ "design": "v3",
+ "noise": {
+  "k": 2,
+  "run_scores": [
+   0.0,
+   0.048791983924027726
+  ],
+  "mean": 0.024395991962013863,
+  "sd_train": 0.034501142700225015,
+  "delta": 0.034501142700225015,
+  "range": 0.048791983924027726,
+  "seeds": [
+   1000,
+   1001
+  ]
+ },
+ "selection": {
+  "selected": "c000",
+  "rule": "no confirmed candidate passed: fixed baseline",
+  "delta": 0.034501142700225015,
+  "confirm": {
+   "c001": {
+    "R": 1,
+    "D": -0.022919589964771517,
+    "D_per_seed": [
+     -0.022919589964771517
+    ],
+    "SE_train": 0.048791983924027726,
+    "SE_item": 0.01620285295508939,
+    "SE": 0.05141196494131331,
+    "z": 1.9599639845400536,
+    "ci_lo": -0.1236851896241815,
+    "ci_hi": 0.07784600969463847,
+    "per_task": {
+     "dev_move": {
+      "n": 2,
+      "D": 0.0,
+      "ci_lo": 0.0,
+      "ci_hi": 0.0
+     },
+     "dev_scale": {
+      "n": 2,
+      "D": -0.045839179929543034,
+      "ci_lo": -0.09167835985908607,
+      "ci_hi": 0.0
+     }
+    },
+    "m_comparisons": 1,
+    "mean_cand": 0.02587239395925621,
+    "mean_base": 0.048791983924027726
+   }
+  },
+  "note": "dev is the selection set; only P3's multi-seed formal retraining on test is independent"
+ },
+ "confirm": {
+  "c001": {
+   "R": 1,
+   "D": -0.022919589964771517,
+   "D_per_seed": [
+    -0.022919589964771517
+   ],
+   "SE_train": 0.048791983924027726,
+   "SE_item": 0.01620285295508939,
+   "SE": 0.05141196494131331,
+   "z": 1.9599639845400536,
+   "ci_lo": -0.1236851896241815,
+   "ci_hi": 0.07784600969463847,
+   "per_task": {
+    "dev_move": {
+     "n": 2,
+     "D": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "dev_scale": {
+     "n": 2,
+     "D": -0.045839179929543034,
+     "ci_lo": -0.09167835985908607,
+     "ci_hi": 0.0
+    }
+   },
+   "m_comparisons": 1,
+   "mean_cand": 0.02587239395925621,
+   "mean_base": 0.048791983924027726
+  }
+ },
+ "p3": {
+  "base_test": 0.0,
+  "baseline_formal_runs": [
+   0.0
+  ]
+ },
+ "gpu_hours": {
+  "search_and_noise_train": 0.24178996642430625,
+  "search_and_noise_probe": 0.10943129645453559,
+  "search_and_noise_eval": 0.08707141055001154,
+  "final_train": 0.028652310106489394,
+  "final_probe": 0.0,
+  "final_eval": 0.024641311433580185,
+  "confirm_train": 0.0722161152627733,
+  "confirm_probe": 0.045766363673739964,
+  "confirm_eval": 0.011581781175401476
+ }
+}

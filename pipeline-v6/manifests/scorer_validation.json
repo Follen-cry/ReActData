@@ -1,0 +1,48 @@
+{
+ "version": "analogy_grid v1.0 + VBVR-CustomEval 2d_geometric_transformation",
+ "cases": {
+  "dev:2d_geometric_transformation": {
+   "n": 50,
+   "gt_mean": 0.99707804705384,
+   "gt_min": 0.963978032157745,
+   "copy_mean": 0.11849420849420843,
+   "passed": true
+  },
+  "dev:shape_color_then_move": {
+   "n": 50,
+   "gt_mean": 1.0,
+   "gt_min": 1.0,
+   "copy_mean": 0.0,
+   "passed": true
+  },
+  "dev:shape_color_then_scale": {
+   "n": 50,
+   "gt_mean": 1.0,
+   "gt_min": 1.0,
+   "copy_mean": 0.0,
+   "passed": true
+  },
+  "test:2d_geometric_transformation": {
+   "n": 50,
+   "gt_mean": 0.9962341295289727,
+   "gt_min": 0.9370065322351605,
+   "copy_mean": 0.12072393822393813,
+   "passed": true
+  },
+  "test:shape_color_then_move": {
+   "n": 50,
+   "gt_mean": 1.0,
+   "gt_min": 1.0,
+   "copy_mean": 0.0,
+   "passed": true
+  },
+  "test:shape_color_then_scale": {
+   "n": 50,
+   "gt_mean": 1.0,
+   "gt_min": 1.0,
+   "copy_mean": 0.0,
+   "passed": true
+  }
+ },
+ "all_passed": true
+}

@@ -1,0 +1,31 @@
+{
+ "run_id": "formal_c000-s2000-g4",
+ "run_dir": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod/jobs/formal_c000-s2000-g4",
+ "candidate_dir": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline/seeds/fixed_f0_final",
+ "run_seed": 2000,
+ "steps": 4,
+ "evals": [
+  {
+   "name": "test",
+   "file": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline/manifests/dev.jsonl",
+   "seeds": [
+    0
+   ],
+   "smoke_standin": true
+  }
+ ],
+ "max_eval_rows": 4,
+ "protocol_sha256": "27dbec46220140f86dee8816630cb92716a509f73c6b2ce5f34b25bafcbf2476",
+ "gpus": 4,
+ "resources": {
+  "exp": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline",
+  "api": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline/api",
+  "data": "/scratch/network/ssd/junlin/reactdata-mod-v5check/data",
+  "manifests": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline/manifests",
+  "runs": "/scratch/network/ssd/junlin/reactdata-mod-v5check/runs",
+  "protocol": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline/protocol.yaml"
+ },
+ "overrides": [
+  "checkpoint.every_steps=50"
+ ]
+}

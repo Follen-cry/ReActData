@@ -1,0 +1,69 @@
+--- c004/databuilder.py
++++ c005/databuilder.py
+@@ -1,11 +1,13 @@
+-"""c004: per-task edit-size selection. Balanced quota 43/43/42; each task draws uniformly from the clips with the
+-largest change_px: scale top 50% (random, as in c002), move top 43 (as in c003), geo top 50%. One seeded mixed order.
++"""c005: per-task edit-size selection. Balanced quota 43/43/42. move: the 43 largest change_px clips (as c003/c004);
++scale: whole pool at random (baseline-like); geo: random from the 50% of clips with the SMALLEST change_px
++(large-edit geo clips deformed the shape in c002-c004). One seeded mixed order.
+ """
+ import random
+ 
+ ROWS_PER_STEP = 16
+ DEFAULT_QUOTA = {"shape_color_then_scale": 43, "shape_color_then_move": 43, "2d_geometric_transformation": 42}
+-DEFAULT_FRAC = {"shape_color_then_scale": 0.5, "shape_color_then_move": 0.27, "2d_geometric_transformation": 0.5}
++DEFAULT_FRAC = {"shape_color_then_scale": 1.0, "shape_color_then_move": 0.27, "2d_geometric_transformation": 0.5}
++SMALL_FIRST = ("2d_geometric_transformation",)
+ 
+ 
+ class Builder:
+@@ -17,7 +19,8 @@
+         frac = config.get("top_frac") or DEFAULT_FRAC
+         for t in sorted(quota):
+             f = frac.get(t, 1.0) if isinstance(frac, dict) else frac
+-            cl = sorted((c for c in pool["clips"] if c["task"] == t), key=lambda c: (-c["change_px"], c["clip_id"]))
++            sign = 1 if t in SMALL_FIRST else -1
++            cl = sorted((c for c in pool["clips"] if c["task"] == t), key=lambda c: (sign * c["change_px"], c["clip_id"]))
+             ids = sorted(c["clip_id"] for c in cl[:max(quota[t], int(round(len(cl) * f)))])
+             order += rng.sample(ids, min(quota[t], len(ids)))
+         rng.shuffle(order)
+--- c004/candidate.yaml
++++ c005/candidate.yaml
+@@ -1,7 +1,7 @@
+ declared_class: static
+ builder:
+   top_frac:
+-    shape_color_then_scale: 0.5
++    shape_color_then_scale: 1.0
+     shape_color_then_move: 0.27
+     2d_geometric_transformation: 0.5
+   quota:
+--- c004/proposal.md
++++ c005/proposal.md
+@@ -1,14 +1,14 @@
+ ## Evidence
+-Results: c000 baseline 0.149; c001 (mix 56/56/16) 0.1245; c002 (all tasks random from top-50% change_px) 0.1818 with scale 0.246 / move 0.172 / geo 0.127; c003 (scale and move = the 43 largest change_px clips, geo top 50%) 0.1774 with scale 0.1425 / move 0.2604 / geo 0.129 (D vs baseline +0.051, CI [+0.026,+0.079]; move +0.117 CI [+0.066,+0.173], scale +0.013). So the same intervention gave the gain on different tasks: scale needed the broader top-50% pool, move benefited from the extreme top-43. Items from c003: dev_move_007 scored 1.0 (c002: 0.241; baseline mean 0.283, sd 0.41); dev_move_006 stays 0.0 (E_wrong_colour, F_missing, extra_objects) in every program; dev_scale_020 scored 0.037 (baseline mean 0.075) with E_wrong_colour and F_wrong_transform, and dev_scale_021 0.368 with E_cell 1.0 but F_transform 0.07 (baseline 0.345). Scale F_transform dropped to 0.263 in c003 from 0.56 in c002, error F_wrong_transform 37 vs 20. Geo is stable at ~0.13 in both (position_alignment 0.15-0.17 vs 0.05 baseline, shape_fidelity 0.25-0.30 vs 0.56).
++Dev means: c000 0.149; c001 0.1245; c002 0.1818 (scale 0.246, move 0.172, geo 0.127); c003 0.1774 (scale 0.1425, move 0.2604, geo 0.1293); c004 0.1649 (scale 0.1567, move 0.2378, geo 0.1002). The additivity test of c004 failed on scale: scale top-50% random gave 0.246 in c002 but 0.157 in c004, so c002's scale gain is likely a lucky draw (scale: no reproducible effect, c003 +0.013, c004 +0.027, CIs include 0). Move with the 43 largest-change_px clips is reproducible: 0.260 (c003, +0.117 CI [0.066,0.173]) and 0.238 (c004, +0.095 CI [0.039,0.155]); dev_move_007 went from 0.241 (c002) to 1.0 (c003). Geo: every large-edit selection (c002-c004) cut shape_fidelity to 0.25-0.30 from 0.563 and raised deformed_shape to 33-36 from 15; in c004 dev_geo_000 scored 0.0 (all sub-scores 0, deformed_shape) vs baseline mean 0.146 (sd 0.138). Position_alignment rose (0.10-0.17 vs 0.05) but not enough to offset: geo c004 is -0.007 vs baseline. dev_scale_021 (c003) had E_cell 1.0 but F_transform 0.07: scale's F-step is not learned by edit-size selection.
+ 
+ ## Hypothesis
+-Per-task edit-size selection is the working lever, but its best form differs by task: scale tolerates/needs diversity (top 50%, 80 clips; the 43 largest scale clips are probably a narrow size band that hurts F-scale generalisation), move gains from the strongest edits. Combining the best observed rule per task (scale: random from top 50%; move: top 43; geo: top 50%) should give roughly additive gains. This is a test of additivity of the two task-specific effects; single run noise is large (sd 0.043), so it is the combination to carry into confirmation.
++(1) Keep the one reproducible effect: move trained on the 43 largest-edit clips. (2) Large-edit geo clips teach big displacement but wreck the polygon's shape (deformed_shape up); selecting the small-edit half of geo clips (small rotations/displacements, closer to F0) should keep shape_fidelity near baseline (0.56) and may still improve position/rotation modestly, so geo should be at or above baseline instead of below. (3) Scale returns to the unselected random pool, since selection has no reproducible effect there.
+ 
+ ## Program
+-Started from c003. databuilder.py: defaults now embedded (per-task top fractions scale 0.5, move 0.27 -> the 43 largest, geo 0.5), quota 43/43/42, uniform random draw within each task's eligible pool, one seeded mixed order. Rule-based, generalises over seeds (move subset is fixed, scale/geo draws vary with seed). analysis.py unchanged.
++Started from c004. Quota 43/43/42. move: random 43 from the 43 largest change_px (i.e. all of them, fixed set). scale: uniform random from the whole 160-clip scale pool. geo: uniform random from the 80 geo clips with the smallest change_px (sign flipped for geo via SMALL_FIRST). One seeded mixed order. Rule-based, generalises over seeds. analysis.py unchanged.
+ 
+ ## What analysis.py measures
+-Per-task training loss, loss probes after steps 0,2,4,6 and generate probe after step 7 per task (as before). Read: scale probe/generate vs c002, move vs c003; the dev per-task numbers tell whether effects are additive.
++Per-task training loss per step, loss probes on inner-probe clips after steps 0,2,4,6, generate probe after step 7 with per-task sub-scores. Read next: geo probe loss (did it stop rising as in c001: 0.0075 -> 0.0138?) and geo shape_fidelity sub-score in the generate probe (target >= 0.5), move probe vs c003/c004.
+ 
+ ## Expected result
+-Scale ~0.22-0.25, move ~0.22-0.26, geo ~0.13; dev mean ~0.20-0.21 (+0.05-0.06 over baseline). Refuted if scale stays near 0.14 (then c002's scale gain was a lucky draw rather than the broad pool) or move falls to ~0.17.
++Move ~0.23-0.26 (+0.09), scale ~0.14-0.17 (baseline level), geo ~0.12-0.15 (shape_fidelity 0.4-0.56, deformed_shape count back toward 15-20); dev mean ~0.18-0.19. Refuted if geo falls below ~0.10 again or deformed_shape stays >30, which would mean the deformation is caused by any geo training at this budget and not by edit size.
+--- c004/memory.md
++++ c005/memory.md
+@@ -1,2 +1,2 @@
+-c001 0.1245 (mix, no gain). c002 top50% all: 0.1818 (scale 0.246). c003 scale/move top-43: 0.1774 (move 0.260, scale 0.1425).
+-c004: scale top50% random, move top-43, geo top50% (combine). Note: config-only change = duplicate, databuilder file must differ. Next idea: geo small-edit or ordering.
++c001 0.1245; c002 0.1818 (scale 0.246 lucky?); c003 0.1774 (move 0.260); c004 0.1649 (scale 0.157 -> c002 scale gain not additive/reproducible; move top-43 reproducible ~+0.1).
++c005: move top-43, scale whole pool random, geo smallest-edit half (tests deformation hypothesis). One candidate left after.

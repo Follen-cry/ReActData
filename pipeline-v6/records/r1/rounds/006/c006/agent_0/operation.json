@@ -1,0 +1,35 @@
+{
+ "status": "completed",
+ "result": {
+  "ok": true,
+  "returncode": 0,
+  "wall_s": 33.80409216880798,
+  "resumed_from": "a9308895-7564-4691-a384-8fd94660f2a2",
+  "result": "I wrote candidate c006, the last of the six. It hasn't been run. I read only the c005 section of `report.md`. I did not open `results.json`, the analysis traces, the failure images, or any dev item files this round. The three dev items in `proposal.md` (`dev_move_007`, `dev_scale_021`, `dev_geo_000`) use numbers I read in earlier rounds.\n\n**What c005 showed:** it scored 0.1345 against the baseline's 0.1493 (D = +0.008, CI [−0.015, +0.032]). The move set was the same 43 largest-edit clips as in c003 and c004, yet move scored only 0.166, against 0.260 and 0.238 in those runs. A single run is too noisy to trust per-task effects.\n\n**The more stable pattern:** the scale plus move sum was about 0.39 to 0.42 in the three runs where both analogy tasks came from large-edit clips (c002, c003, c004). It was 0.307 in c005, where only move was selected that way. The baseline's was 0.332.\n\n**Geo:** every geo run with edit-size selection, in either direction, left shape fidelity at 0.25 to 0.35. The baseline's was 0.56. So selecting geo clips by edit size doesn't pay.\n\n**c006 program** (quota 43/43/42, one seeded mixed order):\n- **Scale and move:** 43 clips each, drawn at random from the top 50% by `change_px`, as in c002.\n- **Geo:** 42 clips drawn at random from all 160 geo clips, with no selection.\n- **Code:** `top_frac` in `candidate.yaml` is now 0.5 / 0.5 / 1.0, with the same defaults in `databuilder.py`. `analysis.py` is unchanged.\n\n**Prediction:** scale about 0.18 to 0.24, move about 0.16 to 0.22, geo about 0.11 to 0.13, and a dev mean of 0.16 to 0.19. That is only a small gain, within the noise of one run. It is refuted if the scale plus move sum falls back near 0.33, or if geo `deformed_shape` stays above 25.\n\n`proposal.md` has all five sections, and `memory.md` is updated.",
+  "model_usage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 56,
+    "outputTokens": 23856,
+    "thinkingTokens": 4162,
+    "cacheReadInputTokens": 1731182,
+    "cacheCreationInputTokens": 102477,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 102477,
+    "webSearchRequests": 0,
+    "costUSD": 0.8216982000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "models": [
+   "claude-sonnet-5-5"
+  ],
+  "cost_usd": 0.8216982000000002,
+  "num_turns": 7,
+  "session_id": "a9308895-7564-4691-a384-8fd94660f2a2",
+  "subtype": "success"
+ }
+}

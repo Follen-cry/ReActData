@@ -1,0 +1,10 @@
+{
+ "n_rows": 64,
+ "templates": {
+  "eval_format": 64
+ },
+ "cmi_bits": 0.0,
+ "p_perm": 1.0,
+ "flag": false,
+ "note": "single template: no template-choice channel"
+}

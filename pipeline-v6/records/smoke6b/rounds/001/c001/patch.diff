@@ -1,0 +1,134 @@
+--- c000/databuilder.py
++++ c001/databuilder.py
+@@ -1,13 +1,11 @@
+-"""Fixed baseline databuilder (reactdata-v6): a task-balanced random subset, one epoch.
++"""c001: task-mixture shift. Quota 56 scale / 56 move / 16 geo, clips drawn uniformly within task, mixed order.
+ 
+-The run's 128 rows are 43 / 43 / 42 clips of the three tasks (which task gets 42 rotates with the seed), each clip drawn
+-uniformly without replacement within its task, then shuffled into one seeded order (so every step mixes tasks at
+-random). Each clip is used once; no context frames; template "eval_format" (= exactly the dev/test text); target = final.
+-No feedback, no schedule.
++Derived from the fixed baseline (c000): same random-within-task draw and seeded shuffle, only the quota changes.
+ """
+ import random
+ 
+ ROWS_PER_STEP = 16
++QUOTA = {"shape_color_then_scale": 56, "shape_color_then_move": 56, "2d_geometric_transformation": 16}
+ 
+ 
+ class Builder:
+@@ -15,9 +13,9 @@
+         rng = random.Random(f"{seed}:subset")
+         tasks = sorted({c["task"] for c in pool["clips"]})
+         n = total_steps * ROWS_PER_STEP
+-        quota = {t: n // len(tasks) for t in tasks}
+-        for i in range(n - sum(quota.values())):
+-            quota[tasks[(seed + i) % len(tasks)]] += 1
++        quota = dict(config.get("quota", QUOTA)) if isinstance(config, dict) else dict(QUOTA)
++        if sum(quota.get(t, 0) for t in tasks) != n:
++            quota = dict(QUOTA)
+         order = []
+         for t in tasks:
+             ids = sorted(c["clip_id"] for c in pool["clips"] if c["task"] == t)
+--- c000/analysis.py
++++ c001/analysis.py
+@@ -1,18 +1,53 @@
+-"""Fixed baseline analysis: keeps a running mean of the training loss for the logs; requests no probes."""
++"""Logs per-task training loss each step; requests a loss probe on all inner-probe clips after every step and one generate probe."""
++
++
++def _task(cid):
++    return cid.split("_")[0]
+ 
+ 
+ class Analysis:
+     def __init__(self, config, seed, total_steps, inner_probe_ids):
++        self.ids = list(inner_probe_ids)
++        self.total = total_steps
+         self.n, self.mean = 0, 0.0
+ 
+     def update(self, step, rows, step_info, probe_results):
++        acc = {}
+         for r in rows:
+             self.n += 1
+             self.mean += (r["loss"] - self.mean) / self.n
+-        return {"mean_loss": self.mean}
++            a = acc.setdefault(_task(r["clip_id"]), [0, 0.0])
++            a[0] += 1
++            a[1] += r["loss"]
++        out = {"mean_loss": self.mean, "grad_norm": step_info.get("grad_norm")}
++        for t, (c, s) in acc.items():
++            out["rows_" + t] = c
++            out["loss_" + t] = s / c
++        for p in probe_results or []:
++            if p.get("kind") == "loss" and "items" in p:
++                pa = {}
++                for it in p["items"]:
++                    b = pa.setdefault(_task(it["clip_id"]), [0, 0.0])
++                    b[0] += 1
++                    b[1] += it["loss"]
++                out["probe_loss_after_step_%d" % p.get("step", -1)] = {t: v[1] / v[0] for t, v in pa.items()}
++            elif p.get("kind") == "generate" and "items" in p:
++                ga = {}
++                for it in p["items"]:
++                    b = ga.setdefault(_task(it["clip_id"]), [0, 0.0])
++                    b[0] += 1
++                    b[1] += it["score"]
++                out["probe_score_step_%d" % p.get("step", -1)] = {t: v[1] / v[0] for t, v in ga.items()}
++        return out
+ 
+     def request_probes(self, step, budget):
+-        return []
++        req = []
++        items = [{"clip_id": c, "context_frames": [], "template_id": "eval_format"} for c in self.ids]
++        if budget.get("loss_probes_left", 0) > 0 and step >= budget.get("loss_probe_next_allowed_step", 0):
++            req.append({"kind": "loss", "items": items})
++        if step >= 4 and budget.get("generate_probes_left", 0) > 0 and step >= budget.get("generate_probe_next_allowed_step", 4):
++            req.append({"kind": "generate", "clip_ids": list(self.ids)})
++        return req
+ 
+     def state_dict(self):
+         return {"n": self.n, "mean": self.mean}
+--- c000/candidate.yaml
++++ c001/candidate.yaml
+@@ -1,4 +1,8 @@
+-# Fixed task-balanced random subset baseline (reactdata-v6). declared_class: fixed
+-declared_class: fixed
+-builder: {}
++# c001: task mixture 56/56/16 (scale/move/geo). declared_class: static
++declared_class: static
++builder:
++  quota:
++    shape_color_then_scale: 56
++    shape_color_then_move: 56
++    2d_geometric_transformation: 16
+ analysis: {}
+--- c000/proposal.md
++++ c001/proposal.md
+@@ -1,3 +1,18 @@
+-# Fixed baseline (reactdata-v6)
+-F0 + original description (evaluation wrapper) -> final frame. 128 rows, one epoch: a task-balanced random subset
+-(43 / 43 / 42 clips of scale / move / geo), shuffled. Declared class: fixed. Starting point of the Builder Agent.
++# c001
++
++Started from c000 (fixed baseline; only candidate so far).
++
++## Evidence
++Read report.md, results.json, baseline_replicates.json, the baseline code and plugin API. Only c000 exists, so no analysis traces compare programs. c000 dev: scale 0.270 (E_cell 0.744, F_cell 0.0, F_transform 0.038), move 0.092 (E_cell 0.0, F_cell 0.0, F_transform 0.367), geo 0.111 (rotation_angle 0.0, position_alignment 0.011, shape_fidelity 0.75). Item level: dev_scale_000 baseline mean 0.31 (sd 0.057), dev_move_000 0.046 (sd 0.065), dev_geo_000 0.056 (sd 0.079). Geo rotation sub-score is exactly 0 and the geo score comes almost entirely from shape fidelity, which the untrained model already has; this suggests geo rotation is not learnable in a few rows. Move's E_cell (recolouring D as A became B) is 0, whereas scale's E_cell is already 0.74, so the recolour rule is learnable and shared by scale and move. Baseline training loss per step is flat (0.012, 0.011, 0.022, 0.010). Note the report's numbers come from a 4-step, 2-seed setup, so noise estimates are rough.
++
++## Hypothesis
++Rows spent on geo are largely wasted (rotation 0.0, little headroom within 128 rows), while scale and move share the colour-then-transform structure and have the headroom (move E_cell 0.0, scale F_cell 0.0). Moving rows from geo to scale and move should raise those two task means more than it can cost geo, which has little to lose (shape_fidelity is already 0.75).
++
++## Program
++databuilder.py: quota 56 scale / 56 move / 16 geo, clips drawn uniformly without replacement within each task (seeded, so it is valid for any seed), then one seeded shuffle so every step mixes tasks. Same as c000 except the quota. declared_class static.
++
++## What analysis.py measures
++Per-step per-task training loss and row counts, grad norm, and a loss probe on all 32 inner-probe clips after every step (8 probes), reported as the per-task mean. A generate probe on all 32 inner-probe clips at step 4 or later gives per-task scores. Next step: if probe loss on scale and move falls more than in a baseline run and the geo probe loss does not rise much, the mixture shift works. If the generate-probe score on geo drops, the shift is hurting geo.
++
++## Expected result
++Scale +0.03 to +0.08, move +0.03 to +0.06, geo -0.03 to 0. Dev mean about +0.02 to +0.04. It is refuted if the dev mean is within noise (about 0.06) or if geo falls by more than the gains elsewhere.
+--- c000/memory.md
++++ c001/memory.md
+@@ -1 +1 @@
+-(empty: fresh reactdata-v1 search, nothing inherited)
++c001: quota 56/56/16 scale/move/geo, random within task. Started from c000. Check probe losses per task next step.

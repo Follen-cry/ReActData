@@ -1,0 +1,149 @@
+{
+ "schema_version": 1,
+ "candidates": [
+  {
+   "candidate_id": "c000",
+   "parent_id": null,
+   "status": "trained",
+   "agent_authored": {
+    "proposal": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/seeds/fixed_f0_final/proposal.md",
+    "memory": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-v6/seeds/fixed_f0_final/memory.md",
+    "diff": null,
+    "explanation": null
+   },
+   "measurements": {
+    "evaluation": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1000-g4/eval/dev",
+    "analysis": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1000-g4/signals.jsonl",
+    "probes": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1000-g4/probes.jsonl",
+    "checks": null,
+    "audit": null,
+    "replicates": {
+     "1000": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1000-g4",
+     "1001": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1001-g4"
+    }
+   },
+   "protocol_decisions": {
+    "comparison": null,
+    "confirmation": null,
+    "rejection_reason": null,
+    "selected": false
+   }
+  },
+  {
+   "candidate_id": "c001",
+   "parent_id": "c000",
+   "status": "trained",
+   "agent_authored": {
+    "proposal": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/candidates/c001/code/proposal.md",
+    "memory": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/candidates/c001/code/memory.md",
+    "diff": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/rounds/001/c001/patch.diff",
+    "explanation": null
+   },
+   "measurements": {
+    "evaluation": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c001-s1000-g4/eval/dev",
+    "analysis": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c001-s1000-g4/signals.jsonl",
+    "probes": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c001-s1000-g4/probes.jsonl",
+    "checks": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/rounds/001/c001/checks.json",
+    "audit": {
+     "mi_bits": null,
+     "p_perm": 1.0,
+     "flag": false,
+     "templates": {
+      "eval_format": 64
+     }
+    },
+    "replicates": {}
+   },
+   "protocol_decisions": {
+    "comparison": {
+     "n": 3,
+     "D": 0.016690166943980598,
+     "SE": 3.469620437312722e-18,
+     "ci_lo": 0.0166901669439806,
+     "ci_hi": 0.0166901669439806,
+     "mean_a": 0.1538166193340742,
+     "mean_b": 0.1371264523900936,
+     "per_task": {
+      "dev_geo": {
+       "n": 1,
+       "D": 0.05588304524985835,
+       "ci_lo": 0.05588304524985835,
+       "ci_hi": 0.05588304524985835
+      },
+      "dev_move": {
+       "n": 1,
+       "D": -0.04584323685398044,
+       "ci_lo": -0.04584323685398044,
+       "ci_hi": -0.04584323685398044
+      },
+      "dev_scale": {
+       "n": 1,
+       "D": 0.040030692436063886,
+       "ci_lo": 0.040030692436063886,
+       "ci_hi": 0.040030692436063886
+      }
+     },
+     "reference": "replicate_mean",
+     "D_over_sd_train": 0.5768257001690381
+    },
+    "confirmation": null,
+    "rejection_reason": null,
+    "selected": false
+   }
+  },
+  {
+   "candidate_id": "c002",
+   "parent_id": "c001",
+   "status": "checked",
+   "agent_authored": {
+    "proposal": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/candidates/c002/code/proposal.md",
+    "memory": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/candidates/c002/code/memory.md",
+    "diff": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/rounds/002/c002/patch.diff",
+    "explanation": null
+   },
+   "measurements": {
+    "evaluation": null,
+    "analysis": null,
+    "probes": null,
+    "checks": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/rounds/002/c002/checks.json",
+    "audit": null,
+    "replicates": {}
+   },
+   "protocol_decisions": {
+    "comparison": null,
+    "confirmation": null,
+    "rejection_reason": null,
+    "selected": false
+   }
+  }
+ ],
+ "jobs": {
+  "base_dev": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/base_dev/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/base_dev/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/base_dev/cost.json"
+  },
+  "c000-s1000-g4": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1000-g4/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1000-g4/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1000-g4/cost.json"
+  },
+  "c000-s1001-g4": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1001-g4/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1001-g4/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c000-s1001-g4/cost.json"
+  },
+  "c001-s1000-g4": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c001-s1000-g4/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c001-s1000-g4/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/c001-s1000-g4/cost.json"
+  },
+  "p0_pilot": {
+   "run.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/p0_pilot/run.json",
+   "DONE.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/p0_pilot/DONE.json",
+   "cost.json": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/jobs/p0_pilot/cost.json"
+  }
+ },
+ "selection": null,
+ "frozen": null
+}

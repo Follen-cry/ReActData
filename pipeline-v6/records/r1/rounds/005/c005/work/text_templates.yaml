@@ -1,0 +1,2 @@
+# The fixed baseline trains on exactly the dev/test text.
+eval_format: "{wrapped_description}"

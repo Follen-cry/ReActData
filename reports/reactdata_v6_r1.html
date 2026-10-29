@@ -1,0 +1,215 @@
+<title>ReActData v6 多任务实验</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column (~860px), lab-notebook style; tables carry the numbers, verdict chips carry the state. */
+:root {
+  --bg: #f6f7f5; --surface: #ffffff; --fg: #1d2420; --muted: #5b6660; --line: #d9ded9;
+  --accent: #2f6f5e; --accent-soft: #e2efe9;
+  --good: #2c7a4b; --bad: #b4452f; --warn: #9a6a12; --good-bg: #e3f2e8; --bad-bg: #f8e6e1; --warn-bg: #f7eed8;
+  --display: "Noto Serif SC", "Songti SC", Georgia, serif;
+  --body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141917; --surface: #1c2320; --fg: #e4ebe7; --muted: #9aa8a1; --line: #2f3a35;
+  --accent: #7cc4ad; --accent-soft: #22332d;
+  --good: #7fd19d; --bad: #f08f78; --warn: #e2b766; --good-bg: #1f3328; --bad-bg: #3a2420; --warn-bg: #35301f; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141917; --surface: #1c2320; --fg: #e4ebe7; --muted: #9aa8a1; --line: #2f3a35;
+  --accent: #7cc4ad; --accent-soft: #22332d;
+  --good: #7fd19d; --bad: #f08f78; --warn: #e2b766; --good-bg: #1f3328; --bad-bg: #3a2420; --warn-bg: #35301f; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.7 var(--body); }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 36px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.3; margin: 0; }
+h1 { font-size: 30px; }
+h2 { font-size: 21px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 16px; font-family: var(--body); font-weight: 700; }
+p, ul, ol { margin: 0; }
+section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.eyebrow { font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.lede { color: var(--muted); max-width: 68ch; }
+.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 10px; }
+.verdict ul { padding-left: 1.2em; display: grid; gap: 6px; }
+.chip { display: inline-block; font: 600 12px/1.6 var(--mono); padding: 0 8px; border-radius: 999px; white-space: nowrap; }
+.chip.good { color: var(--good); background: var(--good-bg); }
+.chip.bad { color: var(--bad); background: var(--bad-bg); }
+.chip.warn { color: var(--warn); background: var(--warn-bg); }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12.5px; background: var(--accent-soft); }
+tr:last-child td { border-bottom: 0; }
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.hl td { background: var(--accent-soft); }
+code { font-family: var(--mono); font-size: .9em; background: var(--accent-soft); padding: 0 4px; border-radius: 4px; overflow-wrap: anywhere; }
+.note { font-size: 13px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px; min-width: 0; }
+.card ul, section > ul, section > ol { padding-left: 1.2em; display: grid; gap: 6px; }
+.timeline td:first-child { font-family: var(--mono); white-space: nowrap; color: var(--muted); }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+<header style="display:grid;gap:10px">
+  <span class="eyebrow">reactdata-v6 · run r1 · 2026-10-28</span>
+  <h1>模块化 ReActData pipeline：端到端验证与三任务混合训练实验</h1>
+  <p class="lede">仓库 <code>Follen-cry/ReActData</code>（模块化重构 <code>a1ce1f3</code>）clone 到 <code>/scratch/network/ssd2/junlin/ReActData-mod</code>。先用原 v5 协议做 GPU 冒烟，再改写为 v6：VBVR 三个任务（scale / move / 2d_geo）、每次训练 128 个 datapoint 只过 1 epoch、Builder Agent 6 轮，在 8 × A40 内完成。</p>
+</header>
+
+<section class="verdict" aria-label="结论">
+  <h3>结论</h3>
+  <ul>
+    <li><span class="chip good">可运行</span> 修复 2 个重构引入的 bug 后，新版 modular pipeline 端到端跑通：v5 冒烟（P0→DONE，0.49 h）和 v6 正式 run r1（P0→DONE，2.98 h，0 次失败）。</li>
+    <li><span class="chip bad">无提升</span> 6 个 agent 候选中，"按编辑幅度选 clip"（c002 / c006）在单次筛选中 +0.05，但在 4 个配对 seed 上确认时 D = −0.038 / −0.020，两者的 CI 都覆盖 0，最终选回固定 baseline。改变任务配比（c001）为 −0.002。</li>
+    <li><span class="chip good">训练有效</span> 128 行 × 1 epoch 的 baseline 在 test 上比未训练模型高 +0.071（95% CI [+0.052, +0.093]），提升来自 move（+0.121）和 scale（+0.073）；geo 的旋转完全没学到（+0.020，只来自形状保真）。</li>
+    <li><span class="chip warn">主要问题</span> 训练噪声很大：5 个 baseline replicate 的 dev sd = 0.043（均值 0.127 的 34%），来源是随 seed 出现的部分崩坏（生成时破坏 A–D 格）。在这个噪声水平下，单次筛选挑出的 +0.05 正好是 6 选 1 的赢家诅咒幅度。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>1. 端到端验证与修复的 bug</h2>
+  <p>验证顺序：CPU 测试（49 项单元测试、portable flow、Linux bwrap 沙箱、15 项 v3 flow 断言）→ v5 原协议 GPU 冒烟（真实 Sonnet agent）→ v6 冒烟 → v6 正式 run。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>问题</th><th>影响</th><th>修复</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>runner/common.py</code> 由 checkout 位置推导 <code>REPO</code>/<code>TRAIN_SRC</code>/<code>CVLIB_DIR</code>（假定在 <code>internvlu-exp/exp/&lt;name&gt;/</code>）；<code>configs/train.yaml</code> 用相对 <code>extends</code>；<code>SCRATCH</code> 硬编码为 v5 目录</td><td>独立 clone 无法运行（<code>test_v3_flow</code> 报 <code>/scratch/network/ssd2/Evaluation/...cvlib.py</code> 不存在）；新 run 会写进 v5 的 runs 目录</td><td>环境变量 <code>REACTDATA_REPO</code> / <code>REACTDATA_SCRATCH</code>（带默认值，并由 <code>jobs.py</code> 传给远端 torchrun）；<code>extends</code> 改为绝对路径</td></tr>
+      <tr><td>2</td><td><code>tasks/reactdata/gpu_probes.py</code> 从 DynTrainer 方法搬出后仍用 <code>self.collator</code> 和 <code>crc</code>（两个都未定义）</td><td>任何请求 loss probe 的候选都会让训练崩溃，且被记为 <code>infra_failed</code> 重试一次后整个候选作废（v6 冒烟 c001 中出现）。CPU fake 测试走不到这段 GPU 代码</td><td>传入 collator、本地定义 crc；新增 <code>tests/unit/test_undefined_names.py</code>（pyflakes：在原代码上恰好报出这两处，修复后全树为 0）。已在 GPU 上验证：每步 32 项 loss probe 正常返回</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">两处修复同时打在 <code>pipeline/</code>（v5）和 <code>pipeline-v6/</code>。修复后 <code>pipeline/</code> 单元测试 50/50 通过，<code>pipeline-v6/</code> 50/50 通过。</p>
+  <h3>运行中观察到、尚未修复的问题</h3>
+  <ul>
+    <li><b>启动时 GPU 空闲检查有竞态</b>：只在 launch 时看 nvidia-smi，模型加载要 1–2 分钟。冒烟中两次被邻居的 26 GB 进程挤爆（OOM），我自己的校准任务和冒烟也撞过一次。目前只靠 1 次 infra retry 兜底。</li>
+    <li><b>Runner 代码错误被归为 infra_failed</b>：NameError / TypeError 会被重试并算作候选失败，应单独归类为 runner bug 并停止 run。</li>
+    <li><b>运行中改代码会混用新旧模块</b>：<code>gpu_probes</code> 是惰性 import，一个 job 在补丁中途加载了新模块和旧 <code>train_entry</code>（作废的冒烟 smoke6 c002）。建议每个 job 启动时快照实现 hash 并在结束时校验。</li>
+    <li><b>冒烟测不到 generate probe</b>：smoke 只有 4 步，而 generate probe 要求 step ≥ 4。正式 run 中 agent 没有请求 generate probe，所以这条 GPU 路径在本次仍未被实际执行（代码与 dev eval 调用一致）。</li>
+    <li><b>共享集群</b>：18:31–19:36 其他用户占满 torrnode11–15 的全部 A40 组；torrnode5/7 是 24 GB 的 RTX 6000，放不下。我把 slot 池扩到 9 个 A40 组（仍最多 2 个并发 = 8 GPU），r1 先等了 21 分钟。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>2. v6 实验设计</h2>
+  <div class="grid2">
+    <div class="card"><h3>数据</h3><ul>
+      <li>任务：<code>shape_color_then_scale</code>、<code>shape_color_then_move</code>（analogy-grid 规则打分）、<code>2d_geometric_transformation</code>（VBVR-CustomEval 规则打分，同 v0）。</li>
+      <li>训练池 480 clip（每任务 160），inner probe 32；dev 150、test 150（每任务 50），分数为三任务均值的等权平均。</li>
+      <li>来源：v4/v0 的冻结池 + move 训练集新抽样；dev 复用 v0/v1 dev；test 中 move/geo 复用 v1/v0 test（以前用过一次），scale 新抽 50。</li>
+      <li>隔离：812 组端点 md5 无跨 split 重复，生成参数无重复。打分校验：GT 1.0（geo 0.997），原样拷贝输入得 0（geo 0.12）。</li>
+    </ul></div>
+    <div class="card"><h3>训练与搜索</h3><ul>
+      <li>1 run = 128 行 = 8 step × 16 行，每个 clip 至多一次（1 epoch；checks 和训练中都强制检查）。只训 F0 → final，不用 context / 中间帧，文本固定为评测文本。</li>
+      <li>baseline c000：每任务 43/43/42 个随机 clip，打乱顺序。</li>
+      <li>Agent 能控制的：任务配比、任务内选哪些 clip（看 <code>pool_view.json</code> 中的描述和像素统计）、顺序、loss 反馈。</li>
+      <li>流程（design v3）：5 个 baseline replicate → 6 轮串行 agent（Sonnet，同一 session）→ top-2 在 4 个配对 seed 上确认（Bonferroni z = 2.24）→ 3 个 formal seed 在 test 上评测。</li>
+    </ul></div>
+  </div>
+  <p><b>选择依据：</b>只选有可靠规则打分器的三个任务（<code>shape_outline_then_move</code> 的 GT 在 analogy-grid 打分器上得 0，所以排除）；geo 视频是 70 帧 / 15 fps，scale/move 是 60 帧 / 16 fps，统一中间帧语义的成本高，而 v1/v4/v5 都发现 context 帧和中间目标帧无益或有害，因此 v6 只研究"选哪些数据、怎样配比"。数据点取上限 128，让选择有意义（从 480 中选 27%）。</p>
+  <h3>学习率校准（冻结协议前，c000 seed 1000，dev，每格 1 次）</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>设置</th><th class="n">dev</th><th class="n">scale</th><th class="n">move</th><th class="n">geo</th></tr></thead>
+    <tbody>
+      <tr><td>Base（不训练）</td><td class="n">0.037</td><td class="n">0.002</td><td class="n">0.008</td><td class="n">0.101</td></tr>
+      <tr><td>lr 1×，warmup 6（v5 调度）</td><td class="n">0.100</td><td class="n">0.084</td><td class="n">0.102</td><td class="n">0.114</td></tr>
+      <tr><td>lr 1×，warmup 2</td><td class="n">0.130</td><td class="n">0.107</td><td class="n">0.155</td><td class="n">0.129</td></tr>
+      <tr class="hl"><td><b>lr 2×（LoRA 2e-5 / gen-decoder 1e-4），warmup 3：选用</b></td><td class="n">0.149</td><td class="n">0.158</td><td class="n">0.170</td><td class="n">0.117</td></tr>
+      <tr><td>lr 5×，warmup 2</td><td class="n">0.026</td><td class="n">0</td><td class="n">0</td><td class="n">0.077</td></tr>
+      <tr><td>lr 10×，warmup 2</td><td class="n">0.023</td><td class="n">0</td><td class="n">0</td><td class="n">0.069</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">lr 5× 及以上时 scale/move 全部崩坏（100 个 item 中 E/F 一个都没画出）。r1 的 seed-1000 baseline 复现了校准值（0.1493 vs 0.1485，跑在不同节点上）。</p>
+</section>
+
+<section>
+  <h2>3. r1 结果</h2>
+  <h3>训练噪声（P1）</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>run</th><th class="n">dev</th><th class="n">scale</th><th class="n">move</th><th class="n">geo</th><th class="n">A–D 格被破坏的 item（scale+move，/100）</th></tr></thead>
+    <tbody>
+      <tr><td>Base</td><td class="n">0.037</td><td class="n">0.002</td><td class="n">0.008</td><td class="n">0.101</td><td class="n">94</td></tr>
+      <tr><td>c000 s1000</td><td class="n">0.149</td><td class="n">0.168</td><td class="n">0.164</td><td class="n">0.116</td><td class="n">5</td></tr>
+      <tr><td>c000 s1001</td><td class="n">0.179</td><td class="n">0.221</td><td class="n">0.197</td><td class="n">0.119</td><td class="n">14</td></tr>
+      <tr><td>c000 s1002</td><td class="n">0.134</td><td class="n">0.101</td><td class="n">0.176</td><td class="n">0.124</td><td class="n">13</td></tr>
+      <tr><td>c000 s1003</td><td class="n">0.068</td><td class="n">0.028</td><td class="n">0.101</td><td class="n">0.076</td><td class="n">73</td></tr>
+      <tr><td>c000 s1004</td><td class="n">0.102</td><td class="n">0.129</td><td class="n">0.079</td><td class="n">0.098</td><td class="n">31</td></tr>
+    </tbody>
+  </table></div>
+  <p>均值 0.127，sd_train 0.043（= delta）。geo 的 rotation 子分在所有 run 中都是 0.04–0.07（Base 0.06），8 步学不到旋转。</p>
+
+  <h3>Agent 筛选（每个候选 1 次 run，D 相对 5 个 replicate 的逐 item 均值）</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>候选</th><th>程序（agent 的假设）</th><th class="n">dev</th><th class="n">scale</th><th class="n">move</th><th class="n">geo</th><th class="n">D</th></tr></thead>
+    <tbody>
+      <tr><td>c001</td><td>配比 56/56/16：geo 学不到，把行数挪给 scale/move</td><td class="n">0.125</td><td class="n">0.143</td><td class="n">0.138</td><td class="n">0.092</td><td class="n">−0.002</td></tr>
+      <tr class="hl"><td>c002</td><td>配比不变，每任务只从编辑幅度（<code>change_px</code>）最大的 50% 中抽</td><td class="n">0.182</td><td class="n">0.246</td><td class="n">0.172</td><td class="n">0.127</td><td class="n">+0.055</td></tr>
+      <tr><td>c003</td><td>剂量反应：scale/move 取最大的 27%（固定 43 个），geo 50%</td><td class="n">0.177</td><td class="n">0.142</td><td class="n">0.260</td><td class="n">0.129</td><td class="n">+0.051</td></tr>
+      <tr><td>c004</td><td>组合各任务"最佳"规则（scale 50%，move 27%，geo 50%）</td><td class="n">0.165</td><td class="n">0.157</td><td class="n">0.238</td><td class="n">0.100</td><td class="n">+0.038</td></tr>
+      <tr><td>c005</td><td>move 27%，scale 随机，geo 取编辑幅度最小的 50%</td><td class="n">0.135</td><td class="n">0.141</td><td class="n">0.166</td><td class="n">0.097</td><td class="n">+0.008</td></tr>
+      <tr class="hl"><td>c006</td><td>scale/move 取最大的 50%，geo 随机</td><td class="n">0.178</td><td class="n">0.198</td><td class="n">0.230</td><td class="n">0.106</td><td class="n">+0.051</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">6 个候选全部有效（c003 因 proposal 只引用了 1 个 dev item，被 repair 一次后通过），无重复、无训练失败；全部为 static 类，agent 没有尝试顺序/课程或 loss 反馈。Sonnet 共 7 次调用，$3.68，每次 34–47 s。</p>
+
+  <h3>确认（top-2，seed 1001–1004，与同 seed 的 baseline 配对）</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>候选</th><th class="n">D</th><th class="n">各 seed D</th><th class="n">CI（Bonferroni）</th><th class="n">scale / move / geo D</th><th>结论</th></tr></thead>
+    <tbody>
+      <tr><td>c002</td><td class="n">−0.038</td><td class="n">−0.134, −0.023, −0.009, +0.015</td><td class="n">[−0.107, +0.032]</td><td class="n">−0.060 / −0.025 / −0.028</td><td><span class="chip bad">未通过</span></td></tr>
+      <tr><td>c006</td><td class="n">−0.020</td><td class="n">−0.100, −0.002, +0.062, −0.041</td><td class="n">[−0.090, +0.049]</td><td class="n">−0.016 / −0.029 / −0.016</td><td><span class="chip bad">未通过</span></td></tr>
+    </tbody>
+  </table></div>
+  <p><b>选择：c000（固定 baseline）</b>，因为没有确认通过的候选。seed 1001 上两个候选都部分崩坏（c002 有 53/100 个 scale/move item 的 A–D 格被破坏，同 seed 的 baseline 只有 14），说明造成大幅下降的是训练不稳定，而不是数据规则本身。</p>
+
+  <h3>Test（P3，formal seed 2000–2002，150 item）</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>模型</th><th class="n">test</th><th class="n">scale</th><th class="n">move</th><th class="n">geo</th></tr></thead>
+    <tbody>
+      <tr><td>Base</td><td class="n">0.037</td><td class="n">0.001</td><td class="n">0.006</td><td class="n">0.104</td></tr>
+      <tr><td>c000 s2000</td><td class="n">0.101</td><td class="n">0.067</td><td class="n">0.112</td><td class="n">0.124</td></tr>
+      <tr><td>c000 s2001</td><td class="n">0.115</td><td class="n">0.082</td><td class="n">0.140</td><td class="n">0.122</td></tr>
+      <tr><td>c000 s2002</td><td class="n">0.109</td><td class="n">0.073</td><td class="n">0.128</td><td class="n">0.126</td></tr>
+    </tbody>
+  </table></div>
+  <p>baseline（3 seed 均值）− Base：<b>+0.071，95% CI [+0.052, +0.093]</b>（按任务分层的配对 bootstrap，B = 10,000）；scale +0.073，move +0.121，geo +0.020。</p>
+</section>
+
+<section>
+  <h2>4. 资源与时间</h2>
+  <div class="tbl"><table class="timeline">
+    <tbody>
+      <tr><td>16:59–17:05</td><td>clone、阅读代码、CPU 测试，发现并修复路径 bug</td></tr>
+      <tr><td>17:05–17:34</td><td>v5 原协议 GPU 冒烟：P0→DONE 0.49 h（2 次邻居 OOM，均由 retry 恢复）</td></tr>
+      <tr><td>17:10–17:45</td><td>构建 v6 数据、改代码、学习率校准（6 个 job）</td></tr>
+      <tr><td>17:45–18:43</td><td>v6 冒烟：smoke6 发现 gpu_probes bug（修复中途混用模块，作废）；smoke6b 验证 P0–P2（含 loss probe）后停在等 GPU</td></tr>
+      <tr><td>18:31–19:36</td><td>集群 A40 被占满，等待</td></tr>
+      <tr><td>19:15–22:15</td><td>r1：P0 19:36，P1 20:11，搜索 1.1 h，确认 0.7 h，P3 0.3 h，DONE（2.98 h）</td></tr>
+    </tbody>
+  </table></div>
+  <p>总耗时约 5.3 h（预算 8 h）。v6 实验本身任意时刻最多 8 × A40；只有 17:15–17:34 v5 冒烟和 v6 校准重叠，短暂用到 12 张。r1 共 14.5 GPU-h（eval 生成 10.4、训练 2.6、probe 1.5），校准约 3.5 GPU-h。每个 job 约 8–10 分钟，其中 150 条 dev 生成约 7 分钟，8 步训练只要 40 秒。</p>
+</section>
+
+<section>
+  <h2>5. 后续改进方向</h2>
+  <ol>
+    <li><b>先降训练噪声，再做搜索。</b>sd 0.043 来自随 seed 出现的部分崩坏。lr 2× 离崩坏线（5×）只有 2.5 倍余量，可以按 replicate 方差选 lr，例如比较 1×/w2 和 2×/w3 各 5 个 seed 的均值和崩坏率，而不是看单次 run。也可以考虑更小的每步 batch（例如 4 行 × 32 步，需要改 <code>ROWS_PER_STEP</code> 契约），用更多更小的更新降低单步冲击。</li>
+    <li><b>筛选阶段每个候选至少跑 2 个配对 seed。</b>训练只要 40 s，成本在 dev 生成，所以可以用 75 item × 2 seed 或更少的 diffusion 步数做筛选，让 top-k 不再由单次运气决定。本次 c002/c006 的 +0.05 约等于 6 个候选中最大噪声的期望值（≈ 1.27 sd）。</li>
+    <li><b>把崩坏作为 run 级诊断。</b>A–D 格被破坏的比例（<code>context_damaged</code>）能直接分辨"规则没学到"和"训练坏了"。可以把它写进 report 给 agent 看，也可以作为 job 的自动检查。</li>
+    <li><b>Pipeline 工程：</b>GPU 租约 / 锁文件（launch 后在模型加载完成前保持占用，并在共享 FS 上做跨 run 互斥）；把 Runner 代码异常归为 <code>runner_bug</code> 并停止 run；每个 job 快照实现 hash；冒烟时按比例缩小 probe 间隔，使 generate probe 也被执行；v3 最终报告加入逐任务 test 表；把 <code>test_undefined_names</code> 和 <code>v6_probe_cand</code> 的 GPU 检查纳入发布前清单。</li>
+    <li><b>研究问题本身：</b>8 步学不到 geo 的旋转，所以三任务中只有两个任务对数据选择敏感。可以做预算扫描（16 / 64 / 128 行，或允许 2–4 epoch），找到选择开始起作用的区间。Agent 6 轮都是 static 程序，还会把各任务之间的噪声差异当成可加效应（c004），可以在 instructions 中要求至少有一轮测试顺序或反馈，并给出逐任务的噪声 sd。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>6. 文件位置</h2>
+  <ul>
+    <li>代码：<code>/scratch/network/ssd2/junlin/ReActData-mod/pipeline</code>（v5，已修复）和 <code>pipeline-v6/</code>（v6，<code>README.md</code> 列出与 v5 的全部差异）。改动均未 commit、未 push。</li>
+    <li>r1：<code>/scratch/network/ssd/junlin/reactdata-v6/runs/r1</code>（<code>report.md</code>、<code>state.json</code>、各轮 agent 输入与 proposal）；小文件备份在 <code>pipeline-v6/records/r1</code>。</li>
+    <li>校准：<code>/scratch/network/ssd/junlin/reactdata-v6/calibration</code>；v5 冒烟：<code>/scratch/network/ssd/junlin/reactdata-mod-v5check/runs/smoke-mod</code>。</li>
+    <li>恢复或重跑：<code>cd pipeline-v6 &amp;&amp; python -u runner/state_machine.py --run-id r1 --protocol protocol.yaml</code></li>
+  </ul>
+</section>
+</div>

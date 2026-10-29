@@ -1,0 +1,49 @@
+{
+ "status": "completed",
+ "result": {
+  "candidate": "/scratch/network/ssd/junlin/reactdata-v6/runs/smoke6b/rounds/002/c002/work",
+  "errors": [],
+  "warnings": [
+   "declared class static but behaved like schedule under the tests; label schedule"
+  ],
+  "declared_class": "static",
+  "tested_behaviour": {
+   "steps_with_different_recipes_under_perturbed_signals": 0,
+   "early_vs_late_tv": {
+    "n_context": 0.0,
+    "context_bin": 0.0,
+    "template": 0.0,
+    "target_bin": 0.0,
+    "task": 1.0
+   },
+   "tested_class": "schedule"
+  },
+  "class_label": "schedule",
+  "class_consistent": false,
+  "class_note": "diagnostic only: limited perturbation tests cannot prove program properties",
+  "sim_probe_requests": {
+   "loss": 8,
+   "generate": 1
+  },
+  "sim_stats": {
+   "rows": 128,
+   "unique_clips": 128,
+   "task_rows": {
+    "scale": 32,
+    "geo": 16,
+    "move": 80
+   },
+   "vit_images": 128,
+   "n_context": {
+    "0": 128
+   },
+   "templates": {
+    "eval_format": 128
+   },
+   "context_frame_bins_of_10": {},
+   "target_frame_bins_of_10": {
+    "5": 128
+   }
+  }
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "cand_id": "c001",
+ "code_sha256": "54f871ec554eaff720ab1b52e012410235dae74f9cc64ac9e78b7dfc850bd641",
+ "config_sha256": "e8dead8349842c17e5123c30a101e6f3d7b810420597a0c0ebe73811ef7e3b3e",
+ "templates_sha256": "b6140ff20d596f9b7cdfd42a2b44bd35292630cb88bc2ee6fa52241ca9ca6e38",
+ "protocol_sha256": "27dbec46220140f86dee8816630cb92716a509f73c6b2ce5f34b25bafcbf2476",
+ "round": 1,
+ "parent": "c000",
+ "class_label": "schedule",
+ "status": "trained",
+ "run": "c001-s1000-g4",
+ "dev_mean": 0.0
+}
