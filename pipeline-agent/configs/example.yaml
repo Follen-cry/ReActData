@@ -1,0 +1,23 @@
+# Formal defaults are resolved from tasks/reactdata.yaml. Real backend is not connected yet.
+mode: real
+task: shape_color_then_scale
+max_dataset_bytes: 500000000
+max_text_chars: 8000
+# Populate at least 128 unique training videos (recommended pool: 160).
+# Host supplies canonical PNGs and exact evaluation-format text per source.
+sources:
+  scale_000:
+    video: /absolute/train/scale_000/video.mp4
+    f0: /absolute/train/scale_000/f0.png
+    final: /absolute/train/scale_000/final.png
+    frame_count: 60
+    description: REPLACE_WITH_ORIGINAL_DESCRIPTION
+    eval_text: REPLACE_WITH_EXACT_EVALUATION_TEXT
+external:
+  model_library: /absolute/path/to/internvlu-train
+  weights: /absolute/path/to/f012d760
+  training_config: /absolute/path/to/standalone/resolved-train.yaml
+  dev_manifest: /absolute/path/to/scale-dev-50.jsonl
+  prompt_wrapper: /absolute/path/to/vbvr_target_pred_prompt_wrap.py
+  scorer_cvlib: /absolute/path/to/cvlib.py
+# Test is separate by convention; no OS isolation. No automatic backend fallback.

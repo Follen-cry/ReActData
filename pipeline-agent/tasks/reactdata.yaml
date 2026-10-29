@@ -1,0 +1,36 @@
+version: 1
+task: shape_color_then_scale
+rows_per_trial: 128
+max_trials: 7
+model_init_seed: 42
+train_seed: 1000
+build_seed: 1000
+eval_seed: 0
+training:
+  max_steps: 8
+  global_batch: 16
+  epochs: 1
+  shuffle: false
+  warmup_steps: 3
+  scheduler: linear_warmup_then_cosine
+  lora_lr: 0.00002
+  gen_decoder_lr: 0.0001
+  lm_weight: 0.0
+  gen_weight: 0.5
+  gen_warmup_steps: 0
+  image_size: 512
+  init_snapshot: f012d760
+  checkpoint: last_step
+  restart_from_base_each_trial: true
+evaluation:
+  samples: 50
+  diffusion_steps: 20
+  all_cfg_scale: 4.5
+  part_cfg_scale: 2.0
+  scorer: analogy_grid_v1_scale
+  aggregation: arithmetic_mean_including_invalid
+  invalid_image_score: 0.0
+selection:
+  metric: dev.mean
+  tie_break: baseline_then_earliest
+  retrain: false
