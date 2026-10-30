@@ -1,4 +1,4 @@
-# Formal defaults are resolved from tasks/reactdata.yaml. Real backend is not connected yet.
+# Formal defaults are resolved from tasks/reactdata.yaml; provide all real resources.
 mode: real
 task: shape_color_then_scale
 max_dataset_bytes: 500000000
@@ -18,6 +18,11 @@ external:
   weights: /absolute/path/to/f012d760
   training_config: /absolute/path/to/standalone/resolved-train.yaml
   dev_manifest: /absolute/path/to/scale-dev-50.jsonl
+  test_manifest: /absolute/path/to/scale-test-50.jsonl
   prompt_wrapper: /absolute/path/to/vbvr_target_pred_prompt_wrap.py
   scorer_cvlib: /absolute/path/to/cvlib.py
 # Test is separate by convention; no OS isolation. No automatic backend fallback.
+# Real runs for a kickoff must share one existing host-owned ledger.
+# campaign: /absolute/path/to/campaign.json
+# Conservative estimate including training and dev; reserve is read from the ledger.
+# estimated_trial_seconds: 3600

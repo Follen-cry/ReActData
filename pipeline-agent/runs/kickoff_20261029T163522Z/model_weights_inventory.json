@@ -1,0 +1,90 @@
+{
+  "root": "/scratch/network/ssd2/junlin/huggingface/hub/models--InternVL-U--InternVL-U/snapshots/f012d760e69712bb47f7d3d09a24280f346cee01",
+  "files": {
+    "generation_decoder/config.json": {
+      "bytes": 1667,
+      "sha256": "0d6e4dfdc55483de70a07df5c9206757154b897cb0c217b50efc9fc51ca49e73"
+    },
+    "generation_decoder/model.safetensors": {
+      "bytes": 3805196584,
+      "sha256": "3d4d40703e8a8d805ff41a75baa17085fc54eaec7f3a8658b24d80578489cb3b"
+    },
+    "generation_decoder/model.safetensors.index.json": {
+      "bytes": 50610,
+      "sha256": "cd47b66bff097eacc4181f34020e2cc8b19d56a421a0f6b2d37b503133f930a2"
+    },
+    "model_index.json": {
+      "bytes": 475,
+      "sha256": "5f8f3bbe9c2547a3b2f03731350f746f93e6a3bdcc87ba1df81d466279717de8"
+    },
+    "processor/added_tokens.json": {
+      "bytes": 918,
+      "sha256": "dbe4426aba9061057048a9dd1db665ade363806449f635a9669b3da5fb67c1a2"
+    },
+    "processor/merges.txt": {
+      "bytes": 1671853,
+      "sha256": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5"
+    },
+    "processor/processor_config.json": {
+      "bytes": 1277,
+      "sha256": "13711b3a549e129abc683b75f2071c7e84417f5ff788644be97def6f192e1f7a"
+    },
+    "processor/special_tokens_map.json": {
+      "bytes": 890,
+      "sha256": "7b96cb61e7d3ad953ae098954b5076b809d299832528d27eb85a9da88faa3ea5"
+    },
+    "processor/tokenizer_config.json": {
+      "bytes": 7363,
+      "sha256": "d3d66672b671c145c70112d597b8e5a72fb6b230a00780fdc92b948e6e601744"
+    },
+    "processor/vocab.json": {
+      "bytes": 3383407,
+      "sha256": "87a257b04b17642a0688c98cd1df89c398bda4fee532d6f88b38a659ecb4ac8d"
+    },
+    "scheduler/scheduler_config.json": {
+      "bytes": 840,
+      "sha256": "70e8603120cc387316aa3bc7f08cb2872f6b6eb6eff6f25df1b88b6b76389e81"
+    },
+    "vae/config.json": {
+      "bytes": 730,
+      "sha256": "e4e61b7553f930e9eabf8935f0a77e6d004cc3ee67a601a56ef03cc41ccada68"
+    },
+    "vae/diffusion_pytorch_model.safetensors": {
+      "bytes": 253806966,
+      "sha256": "0c8bc8b758c649abef9ea407b95408389a3b2f610d0d10fcb054fe171d0a8344"
+    },
+    "vlm/added_tokens.json": {
+      "bytes": 918,
+      "sha256": "dbe4426aba9061057048a9dd1db665ade363806449f635a9669b3da5fb67c1a2"
+    },
+    "vlm/config.json": {
+      "bytes": 2761,
+      "sha256": "93310527c146b3cd4cfed44b30c1b547597f82639b95ca7f035bb6fde7a8fb00"
+    },
+    "vlm/merges.txt": {
+      "bytes": 1671853,
+      "sha256": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5"
+    },
+    "vlm/model.safetensors": {
+      "bytes": 4696816816,
+      "sha256": "a849c32b0f229a6b86fbbec7f20ea868419ee2d4a3322c4de76b3e9c92e6a152"
+    },
+    "vlm/model.safetensors.index.json": {
+      "bytes": 50056,
+      "sha256": "5543b047baf16d5201f7c49a07b3ffe104bdaeb5a9e1f9694fb2542ed6200f76"
+    },
+    "vlm/special_tokens_map.json": {
+      "bytes": 890,
+      "sha256": "7b96cb61e7d3ad953ae098954b5076b809d299832528d27eb85a9da88faa3ea5"
+    },
+    "vlm/tokenizer_config.json": {
+      "bytes": 7363,
+      "sha256": "d3d66672b671c145c70112d597b8e5a72fb6b230a00780fdc92b948e6e601744"
+    },
+    "vlm/vocab.json": {
+      "bytes": 3383407,
+      "sha256": "87a257b04b17642a0688c98cd1df89c398bda4fee532d6f88b38a659ecb4ac8d"
+    }
+  },
+  "seconds": 7.284209148027003
+}

@@ -1,0 +1,106 @@
+/usr/bin/bash -lc 'pwd; cat protocols/agent.md COMMANDS.md task.json NOTES.md'
+
+/usr/bin/bash -lc "cat NOTES.md build_dataset.py; python - <<'PY'
+import json
+x=json.load(open('task.json'))
+print(json.dumps({k:v for k,v in x.items() if k not in ('sources','source_hashes','canonical_hashes')},indent=2))
+print('source count',len(x['sources']))
+PY"
+
+/usr/bin/bash -lc '/homes/55/junlin/miniconda3/envs/internvlu/bin/python /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/cli.py --root /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment status'
+
+/usr/bin/bash -lc "rg --files -g AGENTS.md -g '*host*' -g '*dev*' -g '*.md' . ../trials/t0001/dev; cat ../trials/t0001/result.json; head -c 14000 ../trials/t0001/dev/per_item.jsonl"
+
+/usr/bin/bash -lc "python - <<'PY'
+import json,re,collections
+x=json.load(open('task.json'))
+print(collections.Counter(re.search(r'then change size to (\\w+)\\.',v['description'])[1] for v in x['sources'].values()))
+r=[json.loads(l) for l in open('../trials/t0001/dev/per_item.jsonl')]
+print({k:sum(v['sub'][k] for v in r)/len(r) for k in r[0]['sub']})
+PY"
+
+/usr/bin/bash -lc "cp build_dataset.py baseline_builder.py
+python - <<'PY'
+p='build_dataset.py'
+s=open(p).read().replace('import argparse,json,random,sys','import argparse,json,random,sys,re')
+s=s.replace('selected = rng.sample(sorted(config[\\'sources\\']), config[\\'rows_per_trial\\'])\\n    rng.shuffle(selected)', '''pool = sorted(config['sources'])
+    rng.shuffle(pool)
+    sizes = {'small': 0, 'medium': 1, 'large': 2, 'extra_large': 3}
+    def target_size(source):
+        return sizes[re.search(r'then change size to (\\\\w+)\\\\.', config['sources'][source]['description'])[1]]
+    selected = sorted(pool, key=target_size, reverse=True)[:config['rows_per_trial']]
+    rng.shuffle(selected)''')
+open(p,'w').write(s)
+with open('NOTES.md','a') as f:
+ f.write('''
+## Agent continuation: improvement 1
+Read protocol, commands, resolved task, original builder, baseline result and all 50 dev records. Host launch is treated as the release to proceed after its baseline verification; baseline is completed and real. Baseline request "'`baseline`, trial `t0001`, dev.mean=0.23550062360762994, invalid=0/50, F_cell zero=46/50.
+Hypothesis: larger final shapes provide more supervised foreground pixels and improve final-cell accuracy in the fixed eight steps. Select 128 of 160 sources by descending target size, seeded random ties, then seeded shuffle. Canonical endpoints and exact text remain unchanged. Expected: higher dev.mean and F_cell mean; refuted for this run if dev.mean does not exceed baseline. This is a heuristic, not evidence that size causes baseline errors.
+Request ID: `large-targets-v1`. Original builder preserved as baseline_builder.py. Exactly two improvements authorized; no test access or finalization.
+'"''')
+PY
+rm -r dataset
+/homes/55/junlin/miniconda3/envs/internvlu/bin/python build_dataset.py --config task.json --tools /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent --output dataset"
+
+/usr/bin/bash -lc '/homes/55/junlin/miniconda3/envs/internvlu/bin/python /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/cli.py --root /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment validate --dataset /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/workspace/dataset'
+
+/usr/bin/bash -lc '/homes/55/junlin/miniconda3/envs/internvlu/bin/python /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/cli.py --root /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment run --dataset /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/workspace/dataset --request-id large-targets-v1'
+
+/usr/bin/bash -lc "python - <<'PY'
+import json,collections
+r=[json.loads(l) for l in open('dataset/manifest.jsonl')]
+print('rows',len(r),'unique',len({x['source_video_id'] for x in r}))
+PY"
+
+/usr/bin/bash -lc "python - <<'PY'
+import json,collections
+x=json.load(open('../trials/t0002/result.json')); print(x['status'],x['result']['dev'])
+r=[json.loads(l) for l in open('../trials/t0002/dev/per_item.jsonl')]
+print('submeans',{k:sum(v['sub'][k] for v in r)/len(r) for k in r[0]['sub']})
+print('categories',dict(collections.Counter(c for v in r for c in v['categories'])))
+print('F zero',sum(v['sub']['F_cell']==0 for v in r))
+PY"
+
+/usr/bin/bash -lc "cp build_dataset.py large_targets_builder.py
+python - <<'PY'
+p='build_dataset.py';s=open(p).read();start=s.index('    selected = sorted(pool');end=s.index('    rows = []',start)
+s=s[:start]+'''    buckets = {size: [source for source in pool if target_size(source) == size][:32]
+               for size in range(4)}
+    selected = []
+    for i in range(32):
+        order = list(range(4))
+        rng.shuffle(order)
+        selected.extend(buckets[size][i] for size in order)
+'''+s[end:];open(p,'w').write(s)
+with open('NOTES.md','a') as f:
+ f.write('''
+Improvement 1 measured outcome: request "'`large-targets-v1`, trial `t0002`, completed real, dev.mean=0.2335632995514258, n=50, invalid=0. Read result.json and all per-item feedback. Submeans E_cell=0.24194415979599548, F_cell=0.06437360402545263, F_transform=0.4925336080505855. Baseline respective submeans were 0.2761559467365002, 0.04027953174152831, 0.49093691821297414. F_cell zeros fell from 46 to 42, but aggregate dropped by 0.00193732405620414. Hypothesis failed the predefined overall-score criterion; do not infer significance.
+
+## Improvement 2 (last authorized submission)
+Evidence: larger-target selection improved F_cell but lost E_cell and overall mean. Hypothesis: balanced target-size coverage throughout the eight batches will improve overall completion accuracy without sacrificing smaller targets. Select 32 sources per target size using the same build seed for randomized ties, interleave all four sizes in shuffled groups of four, giving each global batch exactly four examples of each size. This is one coverage hypothesis implemented through selection and order. Expected dev.mean above baseline; refuted for this run if it does not exceed 0.23550062360762994. Exact text, canonical images, seeds and training recipe remain fixed. Request ID `balanced-sizes-v1`. Previous strategy retained in large_targets_builder.py.
+'"''')
+PY
+rm -r dataset
+/homes/55/junlin/miniconda3/envs/internvlu/bin/python build_dataset.py --config task.json --tools /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent --output dataset"
+
+/usr/bin/bash -lc '/homes/55/junlin/miniconda3/envs/internvlu/bin/python /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/cli.py --root /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment validate --dataset /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/workspace/dataset'
+
+/usr/bin/bash -lc '/homes/55/junlin/miniconda3/envs/internvlu/bin/python /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/cli.py --root /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment run --dataset /scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/workspace/dataset --request-id balanced-sizes-v1'
+
+/usr/bin/bash -lc "python - <<'PY'
+import json,collections
+from pathlib import Path
+results=[]
+for trial in ['t0001','t0002','t0003']:
+ x=json.loads(Path('../trials',trial,'result.json').read_text()); assert x['status']=='completed'
+ results.append((trial,x['result']['dev']['mean']))
+r=[json.loads(l) for l in Path('../trials/t0003/dev/per_item.jsonl').read_text().splitlines()]
+means={k:sum(v['sub'][k] for v in r)/len(r) for k in r[0]['sub']}
+cats=dict(collections.Counter(c for v in r for c in v['categories']))
+print(results,means,cats)
+best=max(results,key=lambda x:x[1])[0]
+with open('NOTES.md','a') as f:
+ f.write('\\nImprovement 2 measured outcome: request "'`balanced-sizes-v1`, trial `t0003`, completed real, dev.mean=0.11547138551699526, n=50, invalid=0. Read result.json and all per-item feedback. Submeans: '"'+json.dumps(means)+'. Error categories: '+json.dumps(cats)+'. Overall score fell below baseline; balanced coverage hypothesis failed its criterion in this run. Selection and order both changed, so their separate effects cannot be identified. No significance claim.\\n\\n## Selection\\nCompleted exactly two real improvement submissions. Completed trial dev means: '+json.dumps(results)+'. Highest is baseline "'`t0001`; wrote only its ID to selection.txt. No finalize invoked and no test resources read. Stop as required by host search scope.'"\\n')
+Path('selection.txt').write_text(best+'\\n')
+assert Path('selection.txt').read_text()=='t0001\\n'
+PY"

@@ -1,0 +1,10 @@
+{
+  "python": "3.10.20 | packaged by conda-forge | (main, Mar  5 2026, 16:42:22) [GCC 14.3.0]",
+  "executable": "/homes/55/junlin/miniconda3/envs/internvlu/bin/python",
+  "platform": "Linux-4.18.0-147.8.1.el8_1.x86_64-x86_64-with-glibc2.28",
+  "torch": "2.6.0+cu124",
+  "cuda_runtime": "12.4",
+  "opencv": "4.13.0",
+  "transformers": "4.52.3",
+  "yaml": "6.0.3"
+}

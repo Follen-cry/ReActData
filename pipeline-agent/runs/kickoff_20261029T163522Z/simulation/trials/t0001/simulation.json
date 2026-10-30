@@ -1,0 +1,8 @@
+{
+  "simulated": true,
+  "kind": "simulation_receipt",
+  "dev": {
+    "synthetic_score": 0.5
+  },
+  "checkpoint": null
+}

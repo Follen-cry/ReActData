@@ -22,6 +22,11 @@ def setup(tmp_path,mode="simulation"):
                              description="Complete grid",eval_text="<image>\nComplete grid")
     cfg=dict(mode=mode,task="shape_color_then_scale",max_dataset_bytes=5000000,sources=sources)
     if mode=="simulation":cfg.update(simulation_samples=1,simulation_max_trials=2)
+    else:
+        import datetime
+        ledger=tmp_path/'campaign.json'
+        write(ledger,dict(deadline=(datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(hours=8)).isoformat(),training_budget=7,max_concurrent_gpus=4,report_reserve_seconds=5400,training_attempts=[],consumed=0,remaining=7,gpu_allocation=[0]))
+        cfg.update(campaign=str(ledger),estimated_trial_seconds=1)
     write(tmp_path/"config.json",cfg)
     root=tmp_path/"runs/e";experiment.init(root,tmp_path/"config.json")
     cfg=read(root/"config.json")
@@ -61,7 +66,7 @@ def test_bad_submissions(tmp_path,change):
 def test_real_failure_no_fallback_and_no_retry(tmp_path):
     root,data,c=setup(tmp_path,"real")
     r=experiment.run(root,data,"one");assert r["status"]=="failed" and not r["simulated"]
-    assert "REAL_BACKEND_NOT_IMPLEMENTED" in r["error"]
+    assert "REAL_RESOURCE_MISSING" in r["error"]
     assert not list((root/"trials").rglob("*.pt"))
     assert experiment.run(root,data,"one")==r
     with pytest.raises(ValueError):experiment.finalize(root,r["trial_id"])

@@ -8,7 +8,7 @@ def resolve(config_path):
     path = Path(config_path).resolve()
     c = yaml.safe_load(path.read_text(encoding='utf-8'))
     allowed = {'mode', 'task', 'sources', 'external', 'max_dataset_bytes',
-               'max_text_chars', 'simulation_samples', 'simulation_max_trials'}
+               'max_text_chars', 'simulation_samples', 'simulation_max_trials', 'campaign', 'estimated_trial_seconds'}
     if not isinstance(c, dict) or set(c) - allowed:
         raise ValueError('unknown configuration keys; use the current example config and a new experiment')
     if c.get('mode', 'real') not in ('real', 'simulation'):
@@ -23,6 +23,12 @@ def resolve(config_path):
     if c['mode'] == 'simulation':
         c['rows_per_trial'] = c.get('simulation_samples', c['rows_per_trial'])
         c['max_trials'] = c.get('simulation_max_trials', c['max_trials'])
+    if c['mode'] == 'real':
+        if not c.get('campaign') or not isinstance(c.get('estimated_trial_seconds'), (int, float)) or c['estimated_trial_seconds'] <= 0:
+            raise ValueError('real mode requires campaign ledger and positive estimated_trial_seconds')
+        cp = Path(c['campaign'])
+        c['campaign'] = str((path.parent / cp).resolve() if not cp.is_absolute() else cp.resolve())
+        if not Path(c['campaign']).is_file(): raise ValueError('campaign ledger missing')
     c.setdefault('max_dataset_bytes', 500000000)
     c.setdefault('max_text_chars', 8000)
     for key in ('rows_per_trial', 'max_trials', 'max_dataset_bytes', 'max_text_chars'):
@@ -54,7 +60,7 @@ def resolve(config_path):
         c['source_hashes'][sid] = {key: digest(src[key]) for key in ('f0', 'final')}
     if len(seen) < c['rows_per_trial']: raise ValueError('source pool smaller than required rows')
     ext = c.setdefault('external', {})
-    if set(ext) - {'model_library', 'weights', 'training_config', 'dev_manifest', 'prompt_wrapper', 'scorer_cvlib'}:
+    if set(ext) - {'model_library', 'weights', 'training_config', 'dev_manifest', 'test_manifest', 'prompt_wrapper', 'scorer_cvlib'}:
         raise ValueError('unknown external dependency')
     for key, value in ext.items():
         p = Path(value)

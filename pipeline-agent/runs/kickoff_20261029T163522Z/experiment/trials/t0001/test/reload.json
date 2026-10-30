@@ -1,0 +1,5 @@
+{
+  "checkpoint": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/trials/t0001/train/last.pt",
+  "sha256": "782b9dfd432ef3d62f27165b919d63dc73db52a5c8d30aa6c1f40be3b9948334",
+  "loaded": true
+}

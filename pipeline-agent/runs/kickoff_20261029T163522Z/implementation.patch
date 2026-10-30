@@ -1,0 +1,766 @@
+diff --git a/pipeline-agent/README.md b/pipeline-agent/README.md
+index 2cb7a78..be54c71 100644
+--- a/pipeline-agent/README.md
++++ b/pipeline-agent/README.md
+@@ -1,132 +1,49 @@
+ # pipeline-agent
+ 
+-远程首次实验请先读 [REMOTE_HANDOFF.md](REMOTE_HANDOFF.md)，启动 prompt 见 [REMOTE_KICKOFF.md](REMOTE_KICKOFF.md)。
+-本次远程任务要求最多4张GPU、从kickoff开始8小时内、合计7次真实训练机会；GPU与总deadline约束当前尚未实现，交接文档要求远程agent在真实训练前落实。短训练诊断/失败也占机会。
+-远程agent可在首次正式baseline前自主调整并冻结数据/dev/test设计；冻结后搜索遵守统一契约，不能根据反馈更换评测集。
++单任务 `shape_color_then_scale`，静态 manifest，串行 trial，真实 InternVL-U 训练与独立 checkpoint 重载评测。研究 Agent 仅修改训练视频的选择及顺序。Markdown 协议是行为约定，不是 OS 隔离。原始远程要求见 [REMOTE_HANDOFF.md](REMOTE_HANDOFF.md) 与 [protocols/agent.md](protocols/agent.md)。
+ 
+-单任务、单 Agent、串行 trials。默认任务为 **shape_color_then_scale**，F0 → final。
+-Agent 直接运行 Codex，按 Markdown 约束行为；不提供 OS/test 权限隔离。
+-真实训练/dev/test 后端尚未接入，不会默认成功或自动退回 simulation。
++## 入口与边界
+ 
+-## 结构与调用链
++`cli.py → experiment.py → dataset.py / campaign.py → training.py → real_backend.py → internvlu_train`。
++训练后保存最后一步 trainable parameters（冻结权重来自同一个 base snapshot），dev/test 用新进程加载 base 与保存参数；不以训练进程退出为成功依据。`real_score.py → analogy_grid.py → 外部 cvlib` 评分，模型/评分异常使 trial 失败；缺失、不可读、黑或平坦预测图按规则计零。
+ 
+-```text
+-cli.py → experiment.py → task.py (解析固定任务)
+-                      → dataset.py (校验与来源检查)
+-                      → training.py (静态 Row 契约；真实后端待接入)
+-                      → storage.py (状态、快照、锁、hash)
+-agent.py → Codex CLI → workspace/build_dataset.py → CLI run/status
+-starter/build_dataset.py → video.py
+- tasks/reactdata.yaml       固定实验参数
+- protocols/agent.md         Agent 工作规则
+- tests/                    CPU 测试与小型 demo
+-```
+-
+-参考 v6 的实际 protocol + job overrides，而非直接复制旧 train.yaml：固定 128 rows、8 steps、global batch 16、warmup 3、LoRA lr 2e-5、gen decoder lr 1e-4、生成 loss 权重 0.5、lm loss 0、无生成 warmup。manifest 顺序即训练顺序，不重新 shuffle，每个 trial 从相同基础权重初始化。
+-初始化 seed 42，训练随机 seed 1000，构建 seed 1000，评测 seed 0。生成使用 20 diffusion steps、CFG 4.5/2.0。tasks/reactdata.yaml 是新流程的独立契约；旧 pipeline 无 import 或运行时依赖。
+-
+-v6 是三任务实验；本版本只取 scale，不沿用三任务均值、动态 Builder/Analysis、probes、多 seed 或显著性选择。建议单任务 pool 160，dev/test 各固定 50。128 样本预算迁到单任务后需重新验证效果。
+-
+-## 数据接口与宿主准备
++128 个不同视频、8 optimizer steps、global batch 16、每行只使用一次且不 shuffle；不足 16 个 GPU 时按行梯度累积。初始化/训练/构建/评测 seeds 为 42/1000/1000/0。训练 warmup 3、LoRA lr 2e-5、decoder lr 1e-4，20 diffusion steps，CFG 4.5/2.0。最后一步 checkpoint 用于推理，不支持训练中断恢复或隐式重试。
+ 
+-每个 sources 条目包含 video、f0、final、frame_count、description、eval_text；路径相对用户配置解析。
+-宿主提供不重叠的 train/dev/test 划分、来源帧数、原始描述以及完整 evaluation-format 文本。
+-eval_text 应与评测输入完全一致，包括需要的 image token，不能用全局通用文本代替。
+-v6 的 wrapper 在外部 VBVR-DataGeneration 项目中，本仓库没有其实现。external.prompt_wrapper 记录该依赖，**当前不自动执行 wrapper，也不验证其输出语义**；宿主应先生成并核对每个来源的 eval_text。
+-
+-canonical F0/final 使用 512×512 PNG。v6 优先使用原始端点 PNG，不能用有损 MP4 解码后端点冒充等价输入。
+-video.prepare_png(source, output) 提供 OpenCV INTER_AREA 的标准化工具；video.endpoints(video) 支持帧提取（GIF CPU 已测，MP4 待实测）。正式训练使用宿主准备的 PNG，source_endpoints 读取标准 PNG。frame_count 由宿主提供，当前不重新解码视频核实。
+-
+-```json
+-{"sample_id":"0","source_video_id":"scale_000","input_images":["images/0_f0.png"],"target_image":"images/0_final.png","text":"<image>\n完整 evaluation-format 描述","input_frames":[0],"target_frame":59}
+-```
++## 总预算与进程
+ 
+-正式数据必须恰好 128 行；sample_id 唯一、source_video_id 不重复。init 拒绝多个 source ID 指向同一个视频路径。当前不按视频内容去重，宿主需避免复制视频以不同路径重复列入来源。
+-校验 schema、相对路径/越界/symlink、图片可读、预算、固定文本、帧号、512 PNG 来源像素一致性和 init 时的 canonical PNG hash。原视频外部引用；trial 复制训练 PNG/manifest，后续 workspace 修改不改变已有训练输入。
+-Agent 只修改视频筛选与排序；baseline 对排序后的源 ID 用 Random("1000:subset") 无放回抽样，再打乱。
+-代码与笔记归档上限 5 MB，生成数据放 dataset/，不进入代码归档。hash 用于发现意外变化，不抵抗同账号修改 hash 或校验代码。
++真实配置必须提供 `campaign`（所有实验共享的现有 JSON 总账）及 `estimated_trial_seconds`。登记在数据校验之后，登记后失败也消耗机会；同一 request ID 不重跑。总账最多 7 次真实训练，最多 4 张 GPU，截止时间由宿主在 kickoff 时固定。准备时间、诊断、失败和重试均在总预算内；新目录不能重置总账。
+ 
+-## 已实现与待验证
++`campaign.run_process` 用共享文件锁串行化 GPU 子进程、设置批准的 `CUDA_VISIBLE_DEVICES`、到期终止其进程组。训练与 dev 截止于总 deadline 前 90 分钟，test 截止于 deadline 前 30 分钟。GPU 必须由宿主确认可用后填写 `gpu_allocation`；此代码不代替集群调度器，也不防御同权限用户篡改账本。宿主不要换账本规避限额。异常中断后检查账本和活动进程，不自动重新提交。
+ 
+-- CPU 可执行：配置解析、独立 seeds、固定单任务、标准数据校验、baseline、快照、预算、幂等、静态 Row JSON、模拟多轮和报告、Codex 调用边界。
+-- 已实现待 compute node 验证：OpenCV 标准化/MP4 解码、真实 Codex 认证/启动/resume。
+-- 未实现：模型加载、GPU 训练、checkpoint 保存重载、真实 dev/test 和评分 adapter。v6 scorer 依赖外部 cvlib；external.scorer_cvlib 记录路径，尚未接入。
++## CPU 验收
+ 
+-旧骨架配置不再兼容：旧 seed/max_samples/text/source字符串结构会明确报错。请用新配置创建新实验，不覆盖历史状态或产物。
+-
+-## 阶段 1：本地 CPU
+-
+-从 pipeline-agent/ 执行，Python >=3.10：
+ ```sh
+-python -m pip install -r requirements.txt
+-python tests/make_demo.py demo
+-python cli.py --root runs/demo init --config demo/demo.json
+-python cli.py --root runs/demo task
++python -m pytest tests -q
++python tests/make_demo.py runs/demo-data
++python cli.py --root runs/demo init --config runs/demo-data/demo.json
+ python runs/demo/workspace/build_dataset.py --config runs/demo/workspace/task.json --tools . --output runs/demo/workspace/dataset
+-python cli.py --root runs/demo validate --dataset runs/demo/workspace/dataset
+ python cli.py --root runs/demo run --dataset runs/demo/workspace/dataset --request-id baseline
+-python cli.py --root runs/demo run --dataset runs/demo/workspace/dataset --request-id second
+-python cli.py --root runs/demo status
+ python cli.py --root runs/demo finalize --trial t0001
+-python -m pytest tests -q
+ ```
+ 
+-demo 明确 simulation_samples=1；正式配置禁止 simulation overrides。synthetic_score 固定 0.5，不表示质量，checkpoint 为 null。检查各 trial 的 code/dataset/config/integrity/result、training_contract.json、rows.json、simulation.json；final.json/report.md 标注 simulated。查看 result.json 排查失败。重建时先移走/删除 workspace/dataset，不能改已有 trials。
++simulation 明确返回 `simulated=true`、固定 synthetic_score 和 null checkpoint，不是真实结果。不要覆盖既有 run。
+ 
+-## 阶段 2：compute node 单次真实实验（接入前不可成功）
++## 真实运行
+ 
+-配置独立模型库/权重/训练配置、至少 128 个来源、50 项 dev manifest，并核对数据划分与文本。
+-```sh
+-python cli.py --root runs/real-smoke init --config configs/real.yaml
+-python runs/real-smoke/workspace/build_dataset.py --config runs/real-smoke/workspace/task.json --tools . --output runs/real-smoke/workspace/dataset
+-python cli.py --root runs/real-smoke run --dataset runs/real-smoke/workspace/dataset --request-id baseline
+-```
++使用具备 PyTorch/CUDA、InternVL-U 模型依赖和本目录 requirements 的 Python。参考 [configs/example.yaml](configs/example.yaml)，配置外部模型库、base snapshot、完整训练配置、冻结 dev/test JSONL、wrapper 与 cvlib。宿主准备并冻结每视频的完整 eval_text、原始视频、标准 512 PNG 端点、帧数和 split 审计。`external.test_manifest` 与 dev 必须分离。模型路径存在不代表加载成功。
+ 
+-当前会记录 REAL_BACKEND_NOT_IMPLEMENTED，消耗一次机会。不会启动 GPU。
+-接入 training.py：
+-1. rows.json 转模型库 Row，接入 ensure_gen_token；images=F0、cond_image=F0、target_image=final。顺序不变。
+-2. 解析外部训练配置，显式覆盖并核验 training_contract.json 全部参数；不能让旧配置 100 steps/warmup 6 覆盖固定 8/3。记录完整 resolved 配置与模型库/权重版本、hash。
+-3. 每次从共同基础权重初始化；8 steps 后保存 last checkpoint（即使定期保存间隔大于8），检查可重新加载。不能选择 best-dev checkpoint。
+-4. 使用固定 dev split/seed/scorer，记录每项分数、子分数、错误类别、生成图像、均值、loss、耗时、显存。无效生成图计0；评测程序失败是 trial failed，不能当低分完成。
+-5. 在 compute node 实现独立的 backend smoke：少量数据、短训练与少量 dev。**这个诊断命令尚未实现**，不能拿改变128/8/50契约的 smoke 当正式 trial。先完成此诊断，再运行上面的正式 CLI。
+-
+-验收：checkpoint 重载成功，预测图片可读，指标来自真实评分。排查 training.log/dev 日志、配置差异、显存。当前尚不会生成真实训练日志。
+-
+-## 阶段 3：真实 baseline
+-
+-用正式配置新建 runs/baseline，执行相同 init/build/run，首次使用未修改 starter。
+-默认7次机会含1 baseline + 6改进；失败提交也消耗机会。协议要求 baseline 失败后停下排查。
+-检查训练恰好128不同视频、一次遍历、8 steps，保存数据顺序、配置、种子、耗时/峰值显存、dev结果和checkpoint。
+-完成前不进入真实 Agent 搜索。
+-
+-## 阶段 4：Agent 闭环
+-
+-Linux 安装并认证 Codex，检查 codex exec --help。继承用户配置/认证/环境。
+-```sh
+-python cli.py --root runs/baseline agent
+-python cli.py --root runs/baseline agent --resume SESSION_ID
+-# 可选 --executable /opt/bin/codex --model YOUR_MODEL
+-```
+-
+-按需启动或继续，不同时启动多个 Agent。直接传入 --dangerously-bypass-approvals-and-sandbox，无 Docker/broker；协议限制不构成权限限制。
+-每次启动更新 workspace/protocols/agent.md，生成含绝对路径的 COMMANDS.md，前台等待，保存 agent_logs/<id>/launch.json、events.jsonl、stderr.log；返回 session_id 用于显式 resume。
+-参考 [Codex exec](https://learn.chatgpt.com/docs/developer-commands#codex-exec)。completed 只表示 Codex 正常退出，不代表训练成功。
+-
+-Agent 自己维护 NOTES.md：证据→假设→筛选/排序变化→预期→实际结果。读取 dev per-item 反馈；禁止改训练配置、文本、图像及历史产物。缺依赖则停止，不切 simulation。
+-验收两轮真实改进、数据/trial映射、预算、日志和不覆盖历史；本地只验证调用替身。认证失败看 stderr.log/events.jsonl；Ctrl-C 后检查遗留进程，不保证后代清理。
+-
+-## 阶段 5：最终验收
+-
+-Agent 在 selection.txt 写 completed trial ID。默认最高 dev.mean；完全相同优先 baseline，否则较早 trial。模拟分数相同优先 baseline，不得据此宣称质量。这个选择规则由协议约束，宿主可显式指定另一个有效 trial。
+-停止 Agent，宿主执行：
+ ```sh
+-python cli.py --root runs/baseline finalize --trial t0001
++python cli.py --root runs/new-experiment init --config /path/to/frozen-real-config.json
++python runs/new-experiment/workspace/build_dataset.py --config runs/new-experiment/workspace/task.json --tools . --output runs/new-experiment/workspace/dataset
++python cli.py --root runs/new-experiment validate --dataset runs/new-experiment/workspace/dataset
++python cli.py --root runs/new-experiment run --dataset runs/new-experiment/workspace/dataset --request-id baseline
++python cli.py --root runs/new-experiment status
++# baseline 成功后启动直接 Codex；需要宿主在外层施加搜索时间限制。
++python cli.py --root runs/new-experiment agent
++# 停止搜索并按固定 dev 规则选定 checkpoint 后，宿主只运行一次：
++python cli.py --root runs/new-experiment finalize --trial t0001
+ ```
+ 
+-当前仅 simulation 可完成。training.test 后续必须重载选定 trial 的现有 last checkpoint，核验 hash，对独立50项test评测一次，不重新训练/换seed。报告记录checkpoint、数据/配置hash、dev/test指标。不得将test反馈用于继续搜索。
+-test路径和报告与搜索分开只是约定，当前同账号Agent可以访问；不承诺强制隔离。
+-
+-## 失败语义
++trial 产物包含 code/dataset 快照、config、rows、training_contract、train.log、train/last.pt 与 hash、loss、dev 图片/per_item/metrics、重载证明及显存/耗时。finalize 校验 trial 数据/代码/配置和 checkpoint hash；中断或失败后不自动重复 test。Agent 不得访问 test 或执行 finalize。
+ 
+-run 自行校验；校验失败不占机会，登记后的准备/训练失败占机会。相同 request ID 返回原状态，不重新训练。状态 preparing→running→completed/failed。没有自动训练重试/故障恢复。
+-独占锁阻止并行run；崩溃可能留锁，宿主确认无活跃进程后人工处理。finalize锁定后无报告则拒绝自动重试，以免重复test。CPU测试覆盖模拟流程，不证明GPU数值、真实恢复或test保密。
++本次实施进展及真实验证范围见 [EXPERIMENT_OVERVIEW.md](runs/kickoff_20261029T163522Z/EXPERIMENT_OVERVIEW.md)。旧交接文件记录的是实施前状态，保留不改；完整验证以该报告和实际日志为准。
+diff --git a/pipeline-agent/configs/example.yaml b/pipeline-agent/configs/example.yaml
+index 85c888d..0d6a608 100644
+--- a/pipeline-agent/configs/example.yaml
++++ b/pipeline-agent/configs/example.yaml
+@@ -1,4 +1,4 @@
+-# Formal defaults are resolved from tasks/reactdata.yaml. Real backend is not connected yet.
++# Formal defaults are resolved from tasks/reactdata.yaml; provide all real resources.
+ mode: real
+ task: shape_color_then_scale
+ max_dataset_bytes: 500000000
+@@ -18,6 +18,11 @@ external:
+   weights: /absolute/path/to/f012d760
+   training_config: /absolute/path/to/standalone/resolved-train.yaml
+   dev_manifest: /absolute/path/to/scale-dev-50.jsonl
++  test_manifest: /absolute/path/to/scale-test-50.jsonl
+   prompt_wrapper: /absolute/path/to/vbvr_target_pred_prompt_wrap.py
+   scorer_cvlib: /absolute/path/to/cvlib.py
+ # Test is separate by convention; no OS isolation. No automatic backend fallback.
++# Real runs for a kickoff must share one existing host-owned ledger.
++# campaign: /absolute/path/to/campaign.json
++# Conservative estimate including training and dev; reserve is read from the ledger.
++# estimated_trial_seconds: 3600
+diff --git a/pipeline-agent/experiment.py b/pipeline-agent/experiment.py
+index 656142a..32936e8 100644
+--- a/pipeline-agent/experiment.py
++++ b/pipeline-agent/experiment.py
+@@ -3,6 +3,7 @@ from pathlib import Path
+ from storage import read,write,inventory,lock,digest
+ from dataset import validate,local
+ import training
++import campaign
+ 
+ BASE=Path(__file__).resolve().parent
+ 
+@@ -30,6 +31,7 @@ def run(root,dataset,key):
+         if s["mode"]!=c["mode"]: raise ValueError("mode cannot change")
+         rows=validate(dataset,c)
+         tid=f"t{len(s['trials'])+1:04d}";t=root/"trials"/tid
++        if c["mode"] == "real": campaign.register(c["campaign"],root,tid,key,c["estimated_trial_seconds"])
+         record={"trial_id":tid,"role":"baseline" if not s["trials"] else "improvement","status":"preparing","simulated":c["mode"]=="simulation","error":None,"artifacts":{"trial":str(t)}}
+         s["requests"][key]=tid;s["trials"][tid]=record;write(root/"state.json",s)
+         try:
+@@ -54,10 +56,12 @@ def run(root,dataset,key):
+             validate(dest,c) # detect workspace races while copying
+             write(t/"integrity.json",{"dataset":inventory(dest),"code":inventory(t/"code"),"config":inventory(t)["config.json"]})
+             record["status"]="running";write(root/"state.json",s)
++            if c["mode"] == "real": campaign.update(c["campaign"],root,key,"running")
+             record["result"]=training.train_and_dev(t,c)
+             record["status"]="completed"
+         except Exception as e:
+             record.update(status="failed",error=str(e))
++        if c["mode"] == "real": campaign.update(c["campaign"],root,key,record["status"])
+         write(root/"state.json",s);write(t/"result.json",record)
+         return record
+ 
+diff --git a/pipeline-agent/task.py b/pipeline-agent/task.py
+index 694d30b..74a68dd 100644
+--- a/pipeline-agent/task.py
++++ b/pipeline-agent/task.py
+@@ -8,7 +8,7 @@ def resolve(config_path):
+     path = Path(config_path).resolve()
+     c = yaml.safe_load(path.read_text(encoding='utf-8'))
+     allowed = {'mode', 'task', 'sources', 'external', 'max_dataset_bytes',
+-               'max_text_chars', 'simulation_samples', 'simulation_max_trials'}
++               'max_text_chars', 'simulation_samples', 'simulation_max_trials', 'campaign', 'estimated_trial_seconds'}
+     if not isinstance(c, dict) or set(c) - allowed:
+         raise ValueError('unknown configuration keys; use the current example config and a new experiment')
+     if c.get('mode', 'real') not in ('real', 'simulation'):
+@@ -23,6 +23,12 @@ def resolve(config_path):
+     if c['mode'] == 'simulation':
+         c['rows_per_trial'] = c.get('simulation_samples', c['rows_per_trial'])
+         c['max_trials'] = c.get('simulation_max_trials', c['max_trials'])
++    if c['mode'] == 'real':
++        if not c.get('campaign') or not isinstance(c.get('estimated_trial_seconds'), (int, float)) or c['estimated_trial_seconds'] <= 0:
++            raise ValueError('real mode requires campaign ledger and positive estimated_trial_seconds')
++        cp = Path(c['campaign'])
++        c['campaign'] = str((path.parent / cp).resolve() if not cp.is_absolute() else cp.resolve())
++        if not Path(c['campaign']).is_file(): raise ValueError('campaign ledger missing')
+     c.setdefault('max_dataset_bytes', 500000000)
+     c.setdefault('max_text_chars', 8000)
+     for key in ('rows_per_trial', 'max_trials', 'max_dataset_bytes', 'max_text_chars'):
+@@ -54,7 +60,7 @@ def resolve(config_path):
+         c['source_hashes'][sid] = {key: digest(src[key]) for key in ('f0', 'final')}
+     if len(seen) < c['rows_per_trial']: raise ValueError('source pool smaller than required rows')
+     ext = c.setdefault('external', {})
+-    if set(ext) - {'model_library', 'weights', 'training_config', 'dev_manifest', 'prompt_wrapper', 'scorer_cvlib'}:
++    if set(ext) - {'model_library', 'weights', 'training_config', 'dev_manifest', 'test_manifest', 'prompt_wrapper', 'scorer_cvlib'}:
+         raise ValueError('unknown external dependency')
+     for key, value in ext.items():
+         p = Path(value)
+diff --git a/pipeline-agent/tests/test_flow.py b/pipeline-agent/tests/test_flow.py
+index b666792..823f571 100644
+--- a/pipeline-agent/tests/test_flow.py
++++ b/pipeline-agent/tests/test_flow.py
+@@ -22,6 +22,11 @@ def setup(tmp_path,mode="simulation"):
+                              description="Complete grid",eval_text="<image>\nComplete grid")
+     cfg=dict(mode=mode,task="shape_color_then_scale",max_dataset_bytes=5000000,sources=sources)
+     if mode=="simulation":cfg.update(simulation_samples=1,simulation_max_trials=2)
++    else:
++        import datetime
++        ledger=tmp_path/'campaign.json'
++        write(ledger,dict(deadline=(datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(hours=8)).isoformat(),training_budget=7,max_concurrent_gpus=4,report_reserve_seconds=5400,training_attempts=[],consumed=0,remaining=7,gpu_allocation=[0]))
++        cfg.update(campaign=str(ledger),estimated_trial_seconds=1)
+     write(tmp_path/"config.json",cfg)
+     root=tmp_path/"runs/e";experiment.init(root,tmp_path/"config.json")
+     cfg=read(root/"config.json")
+@@ -61,7 +66,7 @@ def test_bad_submissions(tmp_path,change):
+ def test_real_failure_no_fallback_and_no_retry(tmp_path):
+     root,data,c=setup(tmp_path,"real")
+     r=experiment.run(root,data,"one");assert r["status"]=="failed" and not r["simulated"]
+-    assert "REAL_BACKEND_NOT_IMPLEMENTED" in r["error"]
++    assert "REAL_RESOURCE_MISSING" in r["error"]
+     assert not list((root/"trials").rglob("*.pt"))
+     assert experiment.run(root,data,"one")==r
+     with pytest.raises(ValueError):experiment.finalize(root,r["trial_id"])
+diff --git a/pipeline-agent/training.py b/pipeline-agent/training.py
+index c1e0a17..dd74a28 100644
+--- a/pipeline-agent/training.py
++++ b/pipeline-agent/training.py
+@@ -24,7 +24,7 @@ def train_and_dev(trial, config):
+         'external':config['external'], 'simulated':config['mode']=='simulation'})
+     write(trial / 'rows.json', row_specs(trial / 'dataset'))
+     if config['mode'] != 'simulation':
+-        raise NotImplementedError('REAL_BACKEND_NOT_IMPLEMENTED: load fixed base, ensure_gen_token/Row, train 8 steps, save last checkpoint, evaluate 50 dev items; no GPU process started')
++        return real_train(trial, config)
+     result={'simulated':True,'kind':'simulation_receipt','dev':{'synthetic_score':0.5},'checkpoint':None}
+     write(trial / 'simulation.json',result)
+     return result
+@@ -32,5 +32,42 @@ def train_and_dev(trial, config):
+ 
+ def test(trial,config):
+     if config['mode']!='simulation':
+-        raise NotImplementedError('REAL_TEST_NOT_IMPLEMENTED: load selected existing checkpoint, never retrain')
++        return real_test(trial, config)
+     return {'simulated':True,'synthetic_score':0.5,'checkpoint':None}
++
++
++def launch(trial, config, mode, output, **extra):
++    from pathlib import Path
++    import sys
++    import campaign
++    from storage import read
++    ledger=read(config['campaign'])
++    spec={'config':config,'mode':mode,'output':str(output),**extra}
++    path=trial/(mode+'_'+output.name+'_spec.json');write(path,spec)
++    args=[sys.executable,'-m','torch.distributed.run','--standalone',
++          '--nproc_per_node='+str(len(ledger['gpu_allocation'])),str(Path(__file__).parent/'real_backend.py'),'--spec',str(path)]
++    reserve=1800 if output.name=='test' else ledger['report_reserve_seconds']
++    rc=campaign.run_process(config['campaign'],args,trial/(output.name+'.log'),reserve_seconds=reserve)
++    if rc: raise RuntimeError(f'{mode} backend exited {rc}; see {output.name}.log')
++
++
++def real_train(trial,config):
++    from storage import read, digest
++    # Missing resources fail explicitly; never fallback to synthetic scores.
++    for k in ('model_library','weights','training_config','dev_manifest','test_manifest'):
++        if k not in config['external']: raise ValueError('REAL_RESOURCE_MISSING: '+k)
++    launch(trial,config,'train',trial/'train',rows=str(trial/'rows.json'))
++    ck=read(trial/'train/checkpoint.json')
++    if digest(ck['path'])!=ck['sha256']: raise ValueError('saved checkpoint hash mismatch')
++    launch(trial,config,'eval',trial/'dev',checkpoint=ck['path'],checkpoint_sha256=ck['sha256'],manifest=config['external']['dev_manifest'])
++    return dict(simulated=False,checkpoint=ck['path'],checkpoint_sha256=ck['sha256'],dev=read(trial/'dev/metrics.json'),
++                cost={'train':read(trial/'train/cost.json'),'dev':read(trial/'dev/cost.json')},
++                config_sha256=digest(trial/'config.json'),data_sha256=digest(trial/'dataset/manifest.jsonl'),logs=[str(trial/'train.log'),str(trial/'dev.log')])
++
++
++def real_test(trial,config):
++    from storage import read,digest
++    result=read(trial/'result.json')['result']
++    if digest(result['checkpoint'])!=result['checkpoint_sha256']: raise ValueError('selected checkpoint changed')
++    launch(trial,config,'eval',trial/'test',checkpoint=result['checkpoint'],checkpoint_sha256=result['checkpoint_sha256'],manifest=config['external']['test_manifest'])
++    return dict(simulated=False,**read(trial/'test/metrics.json'),checkpoint=result['checkpoint'],checkpoint_sha256=result['checkpoint_sha256'],cost=read(trial/'test/cost.json'))
+diff --git a/pipeline-agent/analogy_grid.py b/pipeline-agent/analogy_grid.py
+new file mode 100644
+index 0000000..2af1b1a
+--- /dev/null
++++ b/pipeline-agent/analogy_grid.py
+@@ -0,0 +1,159 @@
++"""reactdata-v1 rule scorer for the VBVR colour-then-X analogy tasks (shape_color_then_scale, shape_color_then_move).
++
++Scene: a 2x3 grid on white. Top row = worked example A -> B -> C; bottom row = D -> E -> F. F0 shows A, B, C, D
++(4 objects); the final frame adds E (= D recoloured like A -> B) and F (= E transformed like B -> C: rescaled for
++scale, vertically displaced for move). Measured on 60 GT frames per task at the 512 working size: GT always has 6
++objects and F0 always 4; rows split at y = 256; scale F/E area ratio 0.15 .. 6.4; move F - E vertical offset in
++{0, +-12, +-13, +-20, ... +-50} px with equal area; smallest object 320 px^2.
++
++Only the cells the model has to produce are scored. A, B, C, D already exist in the input, so they act as a
++multiplicative context gate instead of earning credit (a copy of the input scores 0 by construction; the VBVR-CustomEval
++move scorer gave 0.40 + 0.05 weight to preservation / count and scored a copy of the input about 0.5).
++
++Sub-scores (all 0..1; total = gates x (0.35 E_cell + 0.40 F_cell + 0.25 F_transform)):
++  E_cell       E is present at its cell, same glyph and size as GT's E (centred IoU), GT's colour.
++  F_cell       the same for F against GT's F (position, glyph+size, colour).
++  F_transform  the task's transform of F relative to the candidate's own E, against GT's:
++                 scale: |log(area_F / area_E) - log(GT ratio)|, full credit <= log 1.15, zero at the error of
++                        "no rescale" (max(|log GT ratio|, log 1.3)) -> leaving F at E's size scores 0;
++                 move:  |(y_F - y_E) - GT offset|, full credit <= 4 px, zero at max(|GT offset|, 10 px)
++                        -> leaving F at E's height scores 0 (offset-0 samples: zero at 10 px).
++Gates: context = mean cell score of A, B, C, D (ramp: 1 above 0.75, 0 at 0.25); blank / sparse foreground ceiling
++(cvlib.blankness); repainted background (dE > 40) -> ceiling 0.15.
++Invalid image (missing / unreadable / black / flat) -> 0 everywhere (handled by runner/score.py).
++"""
++from __future__ import annotations
++
++import math
++import os
++import sys
++from typing import Dict, List, Optional, Tuple
++
++import numpy as np
++
++_CV = "/scratch/network/ssd2/junlin/ssl_mllm/Evaluation/VBVR-CustomEval/scorers"
++if _CV not in sys.path:
++    sys.path.insert(0, _CV)
++import cvlib as C  # noqa: E402
++
++VERSION = "analogy_grid v1.0"
++WEIGHTS = {"E_cell": 0.35, "F_cell": 0.40, "F_transform": 0.25}
++SUBS = tuple(WEIGHTS)
++FG_TOL = 25.0
++MIN_AREA = 150.0              # smallest real object 320 px^2; arrows between cells are ~25 px^2
++ROW_SPLIT = 256.0
++POS_GOOD_PX, POS_BAD_PX = 10.0, 45.0       # column centres jitter ~4 px; 45 px = half the column pitch minus a half glyph
++IOU_GOOD, IOU_BAD = 0.85, 0.60             # same thresholds as the VBVR-CustomEval move scorer (measured there)
++CTX_GOOD, CTX_BAD = 0.75, 0.25
++SCALE_GOOD = math.log(1.15)
++SCALE_MIN_BAD = math.log(1.3)
++MOVE_GOOD_PX, MOVE_MIN_BAD_PX = 4.0, 10.0
++
++
++def detect(img: np.ndarray) -> List[Dict]:
++    return C.objects(img, C.clean(C.foreground_mask(img, tol=FG_TOL), open_k=3, close_k=3), min_area=MIN_AREA)
++
++
++def grid(objs: List[Dict]) -> Dict[str, Dict]:
++    top = sorted([o for o in objs if o["centroid"][1] < ROW_SPLIT], key=lambda o: o["centroid"][0])
++    bot = sorted([o for o in objs if o["centroid"][1] >= ROW_SPLIT], key=lambda o: o["centroid"][0])
++    cells = dict(zip("ABC", top))
++    cells.update(zip("DEF", bot))
++    return cells
++
++
++def _dist(a: Dict, b: Dict) -> float:
++    return float(np.hypot(a["centroid"][0] - b["centroid"][0], a["centroid"][1] - b["centroid"][1]))
++
++
++def cell_report(gt: Dict, cd: Optional[Dict]) -> Dict:
++    if cd is None:
++        return {"present": False, "score": 0.0}
++    d = _dist(gt, cd)
++    pos = C.band(d, POS_GOOD_PX, POS_BAD_PX)
++    iou = C.centred_iou(gt, cd)
++    shape = C.band(1.0 - iou, 1.0 - IOU_GOOD, 1.0 - IOU_BAD)
++    de = C.dE(gt["lab"], cd["lab"])
++    ok = de <= C.SAME_COLOR_DE
++    return {"present": True, "dist_px": round(d, 1), "pos": round(pos, 3), "iou": round(iou, 3), "shape": round(shape, 3),
++            "colour_dE": round(de, 1), "colour_ok": bool(ok), "score": float(pos * shape * (1.0 if ok else 0.0))}
++
++
++def transform_score(task: str, gt: Dict[str, Dict], e: Optional[Dict], f: Optional[Dict]) -> Tuple[float, Dict]:
++    if e is None or f is None:
++        return 0.0, {"reason": "E or F missing"}
++    if task == "shape_color_then_scale":
++        want = math.log(gt["F"]["area"] / gt["E"]["area"])
++        got = math.log(max(f["area"], 1.0) / max(e["area"], 1.0))
++        bad = max(abs(want), SCALE_MIN_BAD)
++        return C.band(abs(got - want), SCALE_GOOD, bad), {"log_ratio_gt": round(want, 3), "log_ratio_cand": round(got, 3)}
++    if task == "shape_color_then_move":
++        want = gt["F"]["centroid"][1] - gt["E"]["centroid"][1]
++        got = f["centroid"][1] - e["centroid"][1]
++        bad = max(abs(want), MOVE_MIN_BAD_PX)
++        return C.band(abs(got - want), MOVE_GOOD_PX, bad), {"dy_gt": round(want, 1), "dy_cand": round(got, 1)}
++    raise ValueError(task)
++
++
++def score_images(task: str, inp: np.ndarray, cand: np.ndarray, gt_img: np.ndarray) -> Tuple[Dict[str, float], Dict]:
++    dbg: Dict = {"version": VERSION}
++    gt_objs, cd_objs = detect(gt_img), detect(cand)
++    gt = grid(gt_objs)
++    dbg["counts"] = {"gt": len(gt_objs), "cand": len(cd_objs)}
++    gate = C.blankness(cand, gt_img)
++    bg_de = C.dE(C.to_lab(C.background_bgr(gt_img)), C.to_lab(C.background_bgr(cand)))
++    ceiling = gate["ceiling"] if bg_de <= 40.0 else min(gate["ceiling"], 0.15)
++    dbg.update(ceiling=ceiling, background_dE=round(bg_de, 1), blankness=gate)
++    if len(gt) < 6:
++        dbg["error"] = f"GT yielded {len(gt)} cells"
++        return {k: 0.0 for k in SUBS}, dbg
++    pool = list(cd_objs)
++    matched, rep = {}, {}
++    for name in "ABCDEF":                    # greedy nearest within POS_BAD_PX, one candidate object per cell
++        best = min(pool, key=lambda o: _dist(o, gt[name])) if pool else None
++        if best is not None and _dist(best, gt[name]) <= POS_BAD_PX:
++            pool.remove(best)
++            matched[name] = best
++        else:
++            matched[name] = None
++        rep[name] = cell_report(gt[name], matched[name])
++    context = float(np.mean([rep[n]["score"] for n in "ABCD"]))
++    ctx_gate = C.band(1.0 - context, 1.0 - CTX_GOOD, 1.0 - CTX_BAD)     # 1 for context >= 0.75, 0 at <= 0.25
++    tr, trd = transform_score(task, gt, matched["E"], matched["F"])
++    sub = {"E_cell": rep["E"]["score"], "F_cell": rep["F"]["score"], "F_transform": tr}
++    mult = ceiling * ctx_gate
++    sub = {k: float(np.clip(v, 0.0, 1.0) * mult) for k, v in sub.items()}
++    dbg.update(cells=rep, context=round(context, 3), context_gate=round(ctx_gate, 3), transform=trd,
++               extra_objects=len(pool))
++    return sub, dbg
++
++
++def overall(sub: Dict[str, float]) -> float:
++    return float(sum(sub[k] * w for k, w in WEIGHTS.items()))
++
++
++def load(path_or_img):
++    return C.load(path_or_img, C.WORK) if isinstance(path_or_img, str) else C.resize_to(path_or_img, C.WORK)
++
++
++def categories(sub: Dict[str, float], dbg: Dict) -> List[str]:
++    """Error categories for failure-case selection (from sub-scores and gates)."""
++    cats = []
++    if dbg.get("ceiling", 1.0) < 1.0:
++        cats.append("blank_or_repainted")
++    if dbg.get("context_gate", 1.0) < 1.0:
++        cats.append("context_damaged")
++    cells = dbg.get("cells", {})
++    for n, key in (("E", "E_wrong"), ("F", "F_wrong")):
++        c = cells.get(n, {})
++        if not c.get("present"):
++            cats.append(f"{n}_missing")
++        elif not c.get("colour_ok", True):
++            cats.append(f"{n}_wrong_colour")
++        elif c.get("score", 0) < 0.5:
++            cats.append(key)
++    if sub.get("F_transform", 0) < 0.5 and cells.get("F", {}).get("present"):
++        cats.append("F_wrong_transform")
++    if dbg.get("extra_objects", 0) > 0:
++        cats.append("extra_objects")
++    return cats
+diff --git a/pipeline-agent/campaign.py b/pipeline-agent/campaign.py
+new file mode 100644
+index 0000000..5b1b245
+--- /dev/null
++++ b/pipeline-agent/campaign.py
+@@ -0,0 +1,103 @@
++"""Host-owned campaign accounting and deadline-bound subprocess execution.
++
++All real experiments in one kickoff must reference the same pre-existing ledger.
++This is coordination for trusted code, not a security boundary.
++"""
++import datetime as dt
++import fcntl
++import os
++from pathlib import Path
++import signal
++import subprocess
++import time
++from contextlib import contextmanager
++from storage import read, write
++
++
++def utc():
++    return dt.datetime.now(dt.timezone.utc)
++
++
++def deadline(c):
++    value = dt.datetime.fromisoformat(c['deadline'].replace('Z', '+00:00'))
++    if value.tzinfo is None:
++        raise ValueError('campaign deadline must have a timezone')
++    return value
++
++
++@contextmanager
++def ledger(path):
++    p = Path(path).resolve()
++    if not p.is_file():
++        raise ValueError('existing campaign ledger required')
++    with open(str(p) + '.lock', 'a') as f:
++        fcntl.flock(f, fcntl.LOCK_EX)
++        c = read(p)
++        yield c
++        write(p, c)
++
++
++def register(path, root, trial_id, request_id, estimated_seconds):
++    with ledger(path) as c:
++        if c['training_budget'] > 7 or c['max_concurrent_gpus'] > 4:
++            raise ValueError('campaign exceeds hard limits')
++        if len(c['training_attempts']) >= c['training_budget']:
++            raise ValueError('campaign training budget exhausted')
++        if any(a['status'] in ('preparing', 'running') for a in c['training_attempts']):
++            raise ValueError('another campaign attempt is active or requires inspection')
++        if estimated_seconds <= 0:
++            raise ValueError('positive training estimate required')
++        if (deadline(c) - utc()).total_seconds() < estimated_seconds + c['report_reserve_seconds']:
++            raise ValueError('insufficient time for trial and final test/report reserve')
++        identity = str(Path(root).resolve()) + ':' + request_id
++        if any(a['identity'] == identity for a in c['training_attempts']):
++            raise ValueError('attempt already registered; inspect campaign and state')
++        c['training_attempts'].append(dict(identity=identity, trial_id=trial_id,
++            status='preparing', started_at=utc().isoformat(), root=str(Path(root).resolve())))
++        c['consumed'] = len(c['training_attempts'])
++        c['remaining'] = c['training_budget'] - c['consumed']
++
++
++def update(path, root, request_id, status):
++    with ledger(path) as c:
++        identity = str(Path(root).resolve()) + ':' + request_id
++        a = next(a for a in c['training_attempts'] if a['identity'] == identity)
++        a['status'] = status
++        if status in ('failed', 'completed', 'interrupted'):
++            a['ended_at'] = utc().isoformat()
++
++
++def _run_process(path, argv, log, *, reserve_seconds=0):
++    """Launch one owned process group, enforce deadline, restrict GPU visibility."""
++    with ledger(path) as c:
++        devices = c['gpu_allocation']
++        if not devices or len(devices) > min(4, c['max_concurrent_gpus']) or len(set(devices)) != len(devices):
++            raise ValueError('invalid allocated GPU list')
++        seconds = (deadline(c) - utc()).total_seconds() - reserve_seconds
++        if seconds <= 0:
++            raise TimeoutError('campaign deadline or reserve reached')
++    env = os.environ.copy()
++    env['CUDA_VISIBLE_DEVICES'] = ','.join(map(str, devices))
++    with open(log, 'ab') as output:
++        proc = subprocess.Popen(argv, stdout=output, stderr=subprocess.STDOUT, env=env, start_new_session=True)
++        try:
++            return proc.wait(timeout=seconds)
++        except (subprocess.TimeoutExpired, BaseException):
++            try:
++                os.killpg(proc.pid, signal.SIGTERM)
++                proc.wait(timeout=10)
++                # The leader may exit before its children. Kill any surviving group.
++                try: os.killpg(proc.pid, signal.SIGKILL)
++                except ProcessLookupError: pass
++            except (ProcessLookupError, subprocess.TimeoutExpired):
++                try: os.killpg(proc.pid, signal.SIGKILL)
++                except ProcessLookupError: pass
++                proc.wait()
++            raise
++
++
++def run_process(path, argv, log, *, reserve_seconds=0):
++    # One GPU process group across every experiment sharing this kickoff ledger.
++    with open(str(Path(path).resolve()) + '.gpu.lock', 'a') as f:
++        fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
++        return _run_process(path, argv, log, reserve_seconds=reserve_seconds)
+diff --git a/pipeline-agent/real_backend.py b/pipeline-agent/real_backend.py
+new file mode 100644
+index 0000000..24d035f
+--- /dev/null
++++ b/pipeline-agent/real_backend.py
+@@ -0,0 +1,88 @@
++"""Static, fixed-order InternVL-U adapter. No imports from historical pipelines."""
++import argparse, contextlib, json, math, os, random, sys, time, zlib
++from pathlib import Path
++from storage import read, write, digest
++
++def main():
++    ap=argparse.ArgumentParser();ap.add_argument('--spec',required=True); a=ap.parse_args()
++    s=read(a.spec); c=s['config']; ext=c['external']; out=Path(s['output']);out.mkdir(parents=True,exist_ok=True)
++    sys.path[:0]=[ext['model_library'],str(Path(ext['model_library']).parent)]
++    import torch
++    import torch.distributed as td
++    from torch.nn.parallel import DistributedDataParallel as DDP
++    from internvlu_train import factory
++    from internvlu_train.config import load_config, dump_config
++    from internvlu_train.cli.train import seed_everything
++    from internvlu_train.model import load_components, build_train_model, apply_adapters
++    from internvlu_train.data import Row, Collator, ensure_gen_token
++    from internvlu_train.engine import init_distributed, shutdown
++    from internvlu_train.optim import build_optimizer
++    from internvlu_train.losses import Objective
++    from internvlu_train.preprocess import sample_drop_state
++    from internvlu_train.checkpoint.state import trainable_state_dict, load_trainable_state_dict
++    from internvlu_train.evaluation import Predictor
++    cfg=load_config(ext['training_config'],[],[])
++    assert cfg.train.global_batch_size==16 and cfg.train.max_steps==8
++    assert cfg.loss.gen_weight==0.5 and cfg.loss.lm_weight==0 and cfg.loss.gen_warmup_steps==0
++    assert cfg.optim.lr==2e-5 and cfg.optim.gen_decoder_lr==1e-4
++    d=init_distributed(timeout_minutes=15); start=time.monotonic()
++    if d.device.type!='cuda': raise RuntimeError('CUDA required; no CPU fallback')
++    seed_everything(c['model_init_seed'])
++    comps=load_components(cfg.model,cfg.data); model=build_train_model(comps,cfg);apply_adapters(model,cfg.adapters);model.to(d.device)
++    ib=factory.item_builder(cfg,comps.tokenizer,model.num_image_token,max_dynamic_patch=1)
++    if d.is_main: dump_config(cfg,str(out/'resolved_train.yaml'))
++    if s['mode']=='train':
++        rows=read(s['rows']); assert len(rows)==128
++        rows=[Row(**{**r,'conversations':ensure_gen_token(r['conversations'])},raw=r) for r in rows]
++        coll=Collator(comps.tokenizer.pad_token_id); opt=build_optimizer(model,cfg.optim)
++        def lr(k):
++            return (k+1)/3 if k<3 else .5*(1+math.cos(math.pi*min(1,(k-2)/6)))
++        sch=torch.optim.lr_scheduler.LambdaLR(opt,lr)
++        ddp=DDP(model,device_ids=[d.local_rank],find_unused_parameters=cfg.dist.find_unused_parameters,static_graph=cfg.dist.static_graph) if d.world_size>1 else model
++        objective=Objective.from_config(cfg.loss); trainable=[p for p in model.parameters() if p.requires_grad]; ddp.train()
++        assert 16%d.world_size==0
++        for step in range(8):
++            ts=time.monotonic(); total=0.;js=list(range(d.rank,16,d.world_size));opt.zero_grad(set_to_none=True)
++            for k,j in enumerate(js):
++                row=rows[step*16+j]
++                drop=sample_drop_state(random.Random(f"{c['train_seed']}:{step}:{j}:drop"),cfg.gen_image.cfg_dropout,cfg.gen_image.cfg_dropout_all_frac)
++                batch=coll([ib.build(row,drop)]).to(d.device)
++                h=zlib.crc32(f"{c['train_seed']}:{step}:{j}".encode());torch.manual_seed(h);torch.cuda.manual_seed(h)
++                ctx=ddp.no_sync() if k<len(js)-1 and hasattr(ddp,'no_sync') else contextlib.nullcontext()
++                with ctx:
++                    with torch.autocast('cuda',dtype=torch.bfloat16): loss=objective(ddp(batch),step)
++                    if not torch.isfinite(loss.total): raise FloatingPointError('nonfinite loss')
++                    (loss.total/len(js)).backward();total+=float(loss.total.detach())/len(js)
++            norm=torch.nn.utils.clip_grad_norm_(trainable,cfg.optim.max_grad_norm)
++            if not math.isfinite(float(norm)): raise FloatingPointError('nonfinite gradient')
++            used=opt.param_groups[0]['lr'];opt.step();sch.step()
++            rec=d.mean({'loss':total,'grad_norm':float(norm)});rec.update(step=step+1,lr=used,seconds=time.monotonic()-ts)
++            if d.is_main:
++                with open(out/'loss.jsonl','a') as f:f.write(json.dumps(rec)+'\n')
++                print(json.dumps(rec),flush=True)
++        if d.is_main:
++            tmp=out/'last.pt.tmp';torch.save(trainable_state_dict(model),tmp);os.replace(tmp,out/'last.pt')
++            write(out/'checkpoint.json',{'path':str(out/'last.pt'),'sha256':digest(out/'last.pt'),'step':8,'format':'trainable_parameters; frozen weights from fixed base','base':ext['weights']})
++        d.barrier()
++    else:
++        if digest(s['checkpoint'])!=s['checkpoint_sha256']: raise ValueError('checkpoint hash mismatch')
++        load_trainable_state_dict(model,torch.load(s['checkpoint'],map_location='cpu',weights_only=True))
++        model.eval(); pred=Predictor(model,comps.tokenizer,ib,comps.scheduler,diffusion_steps=20,seed=c['eval_seed'],all_cfg_scale=4.5,part_cfg_scale=2.,generation_mode='image')
++        rows=[json.loads(x) for x in Path(s['manifest']).read_text().splitlines() if x.strip()]
++        assert len(rows)==c['evaluation']['samples']
++        (out/'images').mkdir(exist_ok=True)
++        for raw in rows[d.rank::d.world_size]:
++            result=pred.predict(Row.parse(raw));result['image'].save(out/'images'/f"{raw['id']}.png")
++            print('generated',raw['id'],flush=True)
++        d.barrier()
++        if d.is_main:
++            from real_score import score
++            score(rows,out)
++            write(out/'reload.json',{'checkpoint':s['checkpoint'],'sha256':s['checkpoint_sha256'],'loaded':True})
++    costs=d.mean({'wall_seconds':time.monotonic()-start,'peak_memory_bytes':torch.cuda.max_memory_allocated()})
++    peaks=[None]*d.world_size
++    if d.world_size>1: td.all_gather_object(peaks,torch.cuda.max_memory_allocated())
++    else: peaks=[torch.cuda.max_memory_allocated()]
++    if d.is_main: write(out/'cost.json',{**costs,'world_size':d.world_size,'peak_memory_per_rank':peaks,'simulated':False})
++    d.barrier();shutdown()
++if __name__=='__main__':main()
+diff --git a/pipeline-agent/real_score.py b/pipeline-agent/real_score.py
+new file mode 100644
+index 0000000..5e02339
+--- /dev/null
++++ b/pipeline-agent/real_score.py
+@@ -0,0 +1,18 @@
++"""Single-task v1 scorer adapter; exceptions fail evaluation rather than become zeros."""
++import json
++from pathlib import Path
++import cv2
++import analogy_grid as G
++from storage import write
++
++def item(f0,cand,gt):
++    im=cv2.imread(str(cand)) if Path(cand).is_file() else None
++    if im is None or im.max()<8 or im.std()<1:
++        return dict(score=0.,valid=False,sub={k:0. for k in G.SUBS},categories=['invalid'])
++    sub,dbg=G.score_images('shape_color_then_scale',G.load(f0),G.load(im),G.load(gt))
++    return dict(score=G.overall(sub),valid=True,sub={k:float(v) for k,v in sub.items()},categories=G.categories(sub,dbg))
++def score(rows,out):
++    items=[dict(id=r['id'],**item(r['image'][0],out/'images'/f"{r['id']}.png",r['target_image'])) for r in rows]
++    (out/'per_item.jsonl').write_text(''.join(json.dumps(r)+'\n' for r in items))
++    result=dict(mean=sum(r['score'] for r in items)/len(items),n=len(items),n_invalid=sum(not r['valid'] for r in items),per_item=str(out/'per_item.jsonl'))
++    write(out/'metrics.json',result);return result
+diff --git a/pipeline-agent/tests/test_campaign.py b/pipeline-agent/tests/test_campaign.py
+new file mode 100644
+index 0000000..27aa5e6
+--- /dev/null
++++ b/pipeline-agent/tests/test_campaign.py
+@@ -0,0 +1,33 @@
++import datetime, json, sys
++from pathlib import Path
++import pytest
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++import campaign
++from storage import write, read
++
++def test_budget_and_reserve(tmp_path):
++    p=tmp_path/'campaign.json'
++    write(p,dict(deadline=(campaign.utc()+datetime.timedelta(hours=8)).isoformat(),training_budget=1,max_concurrent_gpus=4,report_reserve_seconds=5400,training_attempts=[],consumed=0,remaining=1,gpu_allocation=[0]))
++    campaign.register(p,tmp_path/'one','t0001','a',1)
++    with pytest.raises(ValueError): campaign.register(p,tmp_path/'two','t0001','b',1)
++    campaign.update(p,tmp_path/'one','a','failed')
++    assert read(p)['remaining']==0
++    with pytest.raises(ValueError): campaign.register(p,tmp_path/'two','t0001','b',1)
++    c=read(p);c.update(training_budget=7,training_attempts=[],deadline=campaign.utc().isoformat());write(p,c)
++    with pytest.raises(ValueError): campaign.register(p,tmp_path/'two','t0001','c',1)
++
++def test_timeout_process_group(tmp_path):
++    p=tmp_path/'campaign.json'
++    write(p,dict(deadline=(campaign.utc()+datetime.timedelta(seconds=1)).isoformat(),max_concurrent_gpus=4,gpu_allocation=[0]))
++    with pytest.raises(Exception): campaign.run_process(p,[sys.executable,'-c','import time; time.sleep(20)'],tmp_path/'log')
++
++def test_timeout_kills_descendants(tmp_path):
++    import subprocess, time
++    p=tmp_path/'campaign.json';marker=tmp_path/'survived'
++    write(p,dict(deadline=(campaign.utc()+datetime.timedelta(seconds=1)).isoformat(),max_concurrent_gpus=4,gpu_allocation=[0]))
++    child="import time,pathlib;time.sleep(2);pathlib.Path("+repr(str(marker))+").touch()"
++    parent="import subprocess,sys,time;subprocess.Popen([sys.executable,'-c',"+repr(child)+"]);time.sleep(20)"
++    with pytest.raises(subprocess.TimeoutExpired):
++        campaign.run_process(p,[sys.executable,'-c',parent],tmp_path/'log')
++    time.sleep(1.5)
++    assert not marker.exists()

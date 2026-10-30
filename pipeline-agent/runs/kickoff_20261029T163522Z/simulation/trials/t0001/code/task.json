@@ -1,0 +1,62 @@
+{
+  "mode": "simulation",
+  "task": "shape_color_then_scale",
+  "simulation_samples": 1,
+  "sources": {
+    "tiny": {
+      "video": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/demo/tiny.gif",
+      "f0": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/demo/f0.png",
+      "final": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/demo/final.png",
+      "frame_count": 2,
+      "description": "Synthetic demo",
+      "eval_text": "<image>\nSynthetic demo"
+    }
+  },
+  "version": 1,
+  "rows_per_trial": 1,
+  "max_trials": 7,
+  "model_init_seed": 42,
+  "train_seed": 1000,
+  "build_seed": 1000,
+  "eval_seed": 0,
+  "training": {
+    "max_steps": 8,
+    "global_batch": 16,
+    "epochs": 1,
+    "shuffle": false,
+    "warmup_steps": 3,
+    "scheduler": "linear_warmup_then_cosine",
+    "lora_lr": 2e-05,
+    "gen_decoder_lr": 0.0001,
+    "lm_weight": 0.0,
+    "gen_weight": 0.5,
+    "gen_warmup_steps": 0,
+    "image_size": 512,
+    "init_snapshot": "f012d760",
+    "checkpoint": "last_step",
+    "restart_from_base_each_trial": true
+  },
+  "evaluation": {
+    "samples": 50,
+    "diffusion_steps": 20,
+    "all_cfg_scale": 4.5,
+    "part_cfg_scale": 2.0,
+    "scorer": "analogy_grid_v1_scale",
+    "aggregation": "arithmetic_mean_including_invalid",
+    "invalid_image_score": 0.0
+  },
+  "selection": {
+    "metric": "dev.mean",
+    "tie_break": "baseline_then_earliest",
+    "retrain": false
+  },
+  "max_dataset_bytes": 500000000,
+  "max_text_chars": 8000,
+  "source_hashes": {
+    "tiny": {
+      "f0": "564ef8f904ca49ea7df2545bd7b28b533eba1a6545fc6421e20568ad26c2ca7b",
+      "final": "9541e6514d2f1a429ac95af125254c46a619283a94695e3b02757b0235da3807"
+    }
+  },
+  "external": {}
+}

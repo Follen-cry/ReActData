@@ -1,0 +1,50 @@
+{"id": "dev_160", "score": 0.2212099644128114, "valid": true, "sub": {"E_cell": 0.6320284697508898, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_missing"]}
+{"id": "dev_161", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_162", "score": 0.37063069736313226, "valid": true, "sub": {"E_cell": 0.8285714285714287, "F_cell": 0.0, "F_transform": 0.32252278945252877}, "categories": ["F_wrong", "F_wrong_transform"]}
+{"id": "dev_163", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_164", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_165", "score": 0.25, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 1.0}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "dev_166", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_wrong_colour", "F_wrong_transform"]}
+{"id": "dev_167", "score": 0.3068549195885762, "valid": true, "sub": {"E_cell": 0.7059245960502696, "F_cell": 0.0, "F_transform": 0.23912524388392742}, "categories": ["F_wrong", "F_wrong_transform"]}
+{"id": "dev_168", "score": 0.35, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_wrong_colour", "F_wrong_transform"]}
+{"id": "dev_169", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_170", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_171", "score": 0.15928034020281323, "valid": true, "sub": {"E_cell": 0.45508668629375215, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_172", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_173", "score": 0.23340157386432372, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.9336062954572949}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "dev_174", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_175", "score": 0.4371399138746712, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.8521929824561405, "F_transform": 0.3850508835688601}, "categories": ["E_wrong", "F_wrong_transform"]}
+{"id": "dev_176", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_missing"]}
+{"id": "dev_177", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_178", "score": 0.2577174583590376, "valid": true, "sub": {"E_cell": 0.736335595311536, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_missing"]}
+{"id": "dev_179", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_wrong_colour", "F_wrong_transform"]}
+{"id": "dev_180", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_181", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong_colour", "F_wrong_transform"]}
+{"id": "dev_182", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_missing"]}
+{"id": "dev_183", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_184", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_185", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_186", "score": 0.36731842892130473, "valid": true, "sub": {"E_cell": 0.45930735930735933, "F_cell": 0.0, "F_transform": 0.826243412654916}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "dev_187", "score": 0.35, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_wrong", "F_wrong_transform"]}
+{"id": "dev_188", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_189", "score": 0.005889570552147206, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.014723926380368013, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_190", "score": 0.3082147580005289, "valid": true, "sub": {"E_cell": 0.8806135942872255, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_wrong", "F_wrong_transform"]}
+{"id": "dev_191", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_192", "score": 0.35, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_missing"]}
+{"id": "dev_193", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_missing"]}
+{"id": "dev_194", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_195", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_missing"]}
+{"id": "dev_196", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_197", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_198", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_199", "score": 0.08142556045219394, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.20356390113048484, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_200", "score": 0.03290858074021705, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.1316343229608682}, "categories": ["E_wrong", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_201", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_missing", "F_wrong", "F_wrong_transform"]}
+{"id": "dev_202", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_missing"]}
+{"id": "dev_203", "score": 0.35, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_wrong", "F_wrong_transform"]}
+{"id": "dev_204", "score": 0.35, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_missing"]}
+{"id": "dev_205", "score": 0.20519700668901109, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.8207880267560443}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "dev_206", "score": 0.34454935622317595, "valid": true, "sub": {"E_cell": 0.984426732066217, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_missing"]}
+{"id": "dev_207", "score": 0.25, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 1.0}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "dev_208", "score": 0.19183114660581868, "valid": true, "sub": {"E_cell": 0.5480889903023392, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_wrong", "F_wrong_transform"]}
+{"id": "dev_209", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_missing"]}

@@ -1,0 +1,50 @@
+{"id": "test_210", "score": 0.10409163725280587, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.4163665490112235}, "categories": ["E_wrong_colour", "F_wrong", "F_wrong_transform"]}
+{"id": "test_211", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_wrong", "F_wrong_transform"]}
+{"id": "test_212", "score": 0.5533502303814866, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.0, "F_transform": 0.8134009215259463}, "categories": ["F_wrong_colour"]}
+{"id": "test_213", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_wrong_colour", "F_wrong_transform"]}
+{"id": "test_214", "score": 0.17612007752295322, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.7044803100918129}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_215", "score": 0.1392526543869616, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.5570106175478464}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_216", "score": 0.42508463761356496, "valid": true, "sub": {"E_cell": 0.3279244053437602, "F_cell": 0.37477477477477494, "F_transform": 0.6416047433333556}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_217", "score": 0.388869035635325, "valid": true, "sub": {"E_cell": 0.6588235294117646, "F_cell": 0.0, "F_transform": 0.6331232013648296}, "categories": ["F_wrong"]}
+{"id": "test_218", "score": 0.14809827272065346, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.5923930908826138}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_219", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_wrong", "F_wrong_transform"]}
+{"id": "test_220", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["context_damaged", "E_wrong", "F_wrong", "F_wrong_transform", "extra_objects"]}
+{"id": "test_221", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_missing", "extra_objects"]}
+{"id": "test_222", "score": 0.25, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 1.0}, "categories": ["E_wrong_colour", "F_wrong"]}
+{"id": "test_223", "score": 0.5699863362291007, "valid": true, "sub": {"E_cell": 0.6716535433070865, "F_cell": 0.2655518394648828, "F_transform": 0.9147474411426693}, "categories": ["F_wrong"]}
+{"id": "test_224", "score": 0.28769556248798483, "valid": true, "sub": {"E_cell": 0.8219873213942425, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["F_wrong", "F_wrong_transform"]}
+{"id": "test_225", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_wrong", "F_wrong_transform"]}
+{"id": "test_226", "score": 0.07171954959200494, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.28687819836801975}, "categories": ["E_wrong", "F_wrong", "F_wrong_transform"]}
+{"id": "test_227", "score": 0.009507456472696296, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.038029825890785185}, "categories": ["E_wrong", "F_wrong", "F_wrong_transform", "extra_objects"]}
+{"id": "test_228", "score": 0.01090495400696484, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.04361981602785936}, "categories": ["E_wrong_colour", "F_wrong_colour", "F_wrong_transform"]}
+{"id": "test_229", "score": 0.11902255639097749, "valid": true, "sub": {"E_cell": 0.3400644468313643, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_wrong_colour", "F_wrong_transform"]}
+{"id": "test_230", "score": 0.7972222673457845, "valid": true, "sub": {"E_cell": 0.7829556983429153, "F_cell": 0.6829694323144104, "F_transform": 1.0}, "categories": []}
+{"id": "test_231", "score": 0.15147428129341198, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.6058971251736479}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_232", "score": 0.2490446373831939, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.9961785495327756}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_233", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_wrong_colour", "F_wrong_transform"]}
+{"id": "test_234", "score": 0.25, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 1.0}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_235", "score": 0.18907425601354352, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.7562970240541741}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_236", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["context_damaged", "E_wrong", "F_wrong", "F_wrong_transform"]}
+{"id": "test_237", "score": 0.2847642298588552, "valid": true, "sub": {"E_cell": 0.13338224504768892, "F_cell": 0.0, "F_transform": 0.9523217763686563}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_238", "score": 0.10941516605101659, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.43766066420406635}, "categories": ["E_wrong", "F_wrong", "F_wrong_transform"]}
+{"id": "test_239", "score": 0.2205374427051425, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.88214977082057}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_240", "score": 0.4500336952958916, "valid": true, "sub": {"E_cell": 0.5640644361833953, "F_cell": 0.028441203281677208, "F_transform": 0.9649386452761295}, "categories": ["F_wrong"]}
+{"id": "test_241", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong_colour", "F_wrong", "F_wrong_transform"]}
+{"id": "test_242", "score": 0.5768443763125043, "valid": true, "sub": {"E_cell": 0.8934631432545204, "F_cell": 0.2550486929779603, "F_transform": 0.6484511959289523}, "categories": ["F_wrong"]}
+{"id": "test_243", "score": 0.8737449098452723, "valid": true, "sub": {"E_cell": 0.9556291390728477, "F_cell": 0.7509185660039094, "F_transform": 0.9556291390728477}, "categories": ["context_damaged"]}
+{"id": "test_244", "score": 0.5899124105929031, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.0, "F_transform": 0.9596496423716125}, "categories": ["F_wrong"]}
+{"id": "test_245", "score": 0.4287610621361443, "valid": true, "sub": {"E_cell": 0.694, "F_cell": 0.0, "F_transform": 0.7434442485445774}, "categories": ["F_wrong"]}
+{"id": "test_246", "score": 0.0421121425900447, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.1684485703601788}, "categories": ["E_wrong", "F_wrong", "F_wrong_transform"]}
+{"id": "test_247", "score": 0.1966920343951375, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.78676813758055}, "categories": ["E_wrong_colour", "F_wrong"]}
+{"id": "test_248", "score": 0.5029843501412721, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.0, "F_transform": 0.6119374005650885}, "categories": ["F_wrong"]}
+{"id": "test_249", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["E_wrong", "F_wrong_colour", "F_wrong_transform"]}
+{"id": "test_250", "score": 0.014239714900000588, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.056958859600002354}, "categories": ["E_wrong_colour", "F_wrong", "F_wrong_transform"]}
+{"id": "test_251", "score": 0.15085337248372294, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.6034134899348917}, "categories": ["E_wrong_colour", "F_wrong"]}
+{"id": "test_252", "score": 0.9260625455688689, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.8709946396664683, "F_transform": 0.9106587588091262}, "categories": []}
+{"id": "test_253", "score": 0.009872395597984668, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.03948958239193867}, "categories": ["E_wrong_colour", "F_wrong", "F_wrong_transform"]}
+{"id": "test_254", "score": 0.5895969929790683, "valid": true, "sub": {"E_cell": 0.6040485829959517, "F_cell": 0.3204499723262129, "F_transform": 1.0}, "categories": ["F_wrong"]}
+{"id": "test_255", "score": 0.0, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.0}, "categories": ["context_damaged", "F_wrong", "F_wrong_transform"]}
+{"id": "test_256", "score": 0.7004833821551385, "valid": true, "sub": {"E_cell": 0.4755266181539639, "F_cell": 1.0, "F_transform": 0.5361962632050045}, "categories": ["E_wrong"]}
+{"id": "test_257", "score": 0.24520917475678555, "valid": true, "sub": {"E_cell": 0.0, "F_cell": 0.0, "F_transform": 0.9808366990271422}, "categories": ["E_wrong", "F_wrong"]}
+{"id": "test_258", "score": 0.9078664307659793, "valid": true, "sub": {"E_cell": 1.0, "F_cell": 0.9782991202346043, "F_transform": 0.6661871306885501}, "categories": []}
+{"id": "test_259", "score": 0.2829571984435798, "valid": true, "sub": {"E_cell": 0.09416342412451373, "F_cell": 0.0, "F_transform": 1.0}, "categories": ["E_wrong", "F_wrong"]}

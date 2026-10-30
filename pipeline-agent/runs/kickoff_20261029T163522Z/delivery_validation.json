@@ -1,0 +1,9 @@
+{
+  "frozen_resources_unchanged": true,
+  "test_pngs_readable_512": 50,
+  "test_invocations": 1,
+  "cpu_tests_passed": 22,
+  "all_overview_links_exist": true,
+  "gpu_0_to_3_free_after_completion": true,
+  "old_pipeline_and_protocols_unmodified": true
+}

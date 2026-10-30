@@ -1,0 +1,18 @@
+{
+  "selected_at": "2026-10-29T17:09:44.089925+00:00",
+  "trial_id": "t0001",
+  "dev": {
+    "mean": 0.23550062360762994,
+    "n": 50,
+    "n_invalid": 0,
+    "per_item": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/trials/t0001/dev/per_item.jsonl"
+  },
+  "checkpoint": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/trials/t0001/train/last.pt",
+  "checkpoint_sha256": "782b9dfd432ef3d62f27165b919d63dc73db52a5c8d30aa6c1f40be3b9948334",
+  "policy": "highest completed real dev.mean; ties baseline then earliest; no test feedback",
+  "candidate_scores": {
+    "t0001": 0.23550062360762994,
+    "t0002": 0.2335632995514258,
+    "t0003": 0.11547138551699526
+  }
+}

@@ -1,0 +1,1 @@
+{"sample_id": "0", "source_video_id": "tiny", "input_images": ["images/0_f0.png"], "target_image": "images/0_final.png", "text": "<image>\nSynthetic demo", "input_frames": [0], "target_frame": 1}

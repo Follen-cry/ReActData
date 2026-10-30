@@ -1,0 +1,7 @@
+{
+  "trainable_tensor_count": 1053,
+  "lora_B_tensors": 196,
+  "nonzero_lora_B": 196,
+  "max_lora_B_norm": 0.019938254728913307,
+  "note": "LoRA B initialized to zero by PEFT; nonzero saved tensors plus finite gradient logs evidence optimizer updates. No extra training."
+}

@@ -1,0 +1,60 @@
+{
+  "started_at": "2026-10-29T16:35:22Z",
+  "deadline": "2026-10-30T00:35:22Z",
+  "report_reserve_seconds": 5400,
+  "initial_git_head": "b649a73ae8ed0628921af75ebe1fce83aa011082",
+  "initial_git_status": "clean",
+  "gpu_candidates": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "gpu_allocation": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "max_concurrent_gpus": 4,
+  "training_budget": 7,
+  "training_attempts": [
+    {
+      "identity": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment:baseline",
+      "trial_id": "t0001",
+      "status": "completed",
+      "started_at": "2026-10-29T16:52:25.563439+00:00",
+      "root": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment",
+      "ended_at": "2026-10-29T16:56:57.609938+00:00"
+    },
+    {
+      "identity": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment:large-targets-v1",
+      "trial_id": "t0002",
+      "status": "completed",
+      "started_at": "2026-10-29T16:58:52.987850+00:00",
+      "root": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment",
+      "ended_at": "2026-10-29T17:03:00.549422+00:00"
+    },
+    {
+      "identity": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment:balanced-sizes-v1",
+      "trial_id": "t0003",
+      "status": "completed",
+      "started_at": "2026-10-29T17:04:33.033789+00:00",
+      "root": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment",
+      "ended_at": "2026-10-29T17:08:39.829006+00:00"
+    }
+  ],
+  "consumed": 3,
+  "remaining": 4,
+  "status": "completed",
+  "previous_stop": {
+    "ended_at": "2026-10-29T16:38:39.497967+00:00",
+    "elapsed_seconds": 197.5,
+    "stop_reason": "real backend, evaluation, and full GPU deadline enforcement not implemented or verified"
+  },
+  "ended_at": "2026-10-29T17:14:30.820932+00:00",
+  "elapsed_seconds": 2348.820932,
+  "final_trial": "t0001",
+  "final_test_mean": 0.2598692286060945,
+  "gpu_peak_count": 4
+}

@@ -1,0 +1,11 @@
+ M pipeline-agent/README.md
+ M pipeline-agent/configs/example.yaml
+ M pipeline-agent/experiment.py
+ M pipeline-agent/task.py
+ M pipeline-agent/tests/test_flow.py
+ M pipeline-agent/training.py
+?? pipeline-agent/analogy_grid.py
+?? pipeline-agent/campaign.py
+?? pipeline-agent/real_backend.py
+?? pipeline-agent/real_score.py
+?? pipeline-agent/tests/test_campaign.py

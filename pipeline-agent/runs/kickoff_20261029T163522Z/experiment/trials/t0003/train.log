@@ -1,0 +1,32 @@
+
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/utils/checkpoint.py:87: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/utils/checkpoint.py:87: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/utils/checkpoint.py:87: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/homes/55/junlin/miniconda3/envs/internvlu/lib/python3.10/site-packages/torch/utils/checkpoint.py:87: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+[rank3]:[W1029 17:04:58.463789576 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank2]:[W1029 17:04:58.474258209 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank0]:[W1029 17:04:58.847032434 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank1]:[W1029 17:04:58.856521158 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+{"grad_norm": 0.07932188361883163, "loss": 0.007645454563316889, "step": 1, "lr": 6.666666666666667e-06, "seconds": 7.330081918742508}
+{"grad_norm": 0.06610897183418274, "loss": 0.005955281529168133, "step": 2, "lr": 1.3333333333333333e-05, "seconds": 5.537116693798453}
+{"grad_norm": 0.17663833498954773, "loss": 0.01370752121147234, "step": 3, "lr": 2e-05, "seconds": 5.2820519879460335}
+{"grad_norm": 0.17464056611061096, "loss": 0.004115983661904465, "step": 4, "lr": 1.866025403784439e-05, "seconds": 5.4114064099267125}
+{"grad_norm": 0.30335569381713867, "loss": 0.008071283184108324, "step": 5, "lr": 1.5000000000000002e-05, "seconds": 5.201474308036268}
+{"grad_norm": 0.1684185415506363, "loss": 0.0059381040482549, "step": 6, "lr": 1e-05, "seconds": 5.119923702906817}
+{"grad_norm": 0.08554071187973022, "loss": 0.0051825789487338625, "step": 7, "lr": 5.000000000000003e-06, "seconds": 5.369031733833253}
+{"grad_norm": 0.0691666454076767, "loss": 0.0039816182252252474, "step": 8, "lr": 1.339745962155613e-06, "seconds": 5.200869455933571}

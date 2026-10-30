@@ -1,0 +1,20 @@
+{
+  "created_at_utc": "2026-10-29T16:37:02.290937+00:00",
+  "seed": 20261029,
+  "candidate_count": 11000,
+  "counts": {
+    "train": 160,
+    "dev": 50,
+    "test": 50
+  },
+  "reject_count": 0,
+  "rejections": [],
+  "unique_raw_video_and_endpoints": true,
+  "prompt_wrapper_sha256": "62c0315daa7ff9ee7242f1a2f88be38fcc1147f4c8377732362c5986db72f4b1",
+  "opencv": "4.13.0",
+  "note": "SHA256 raw video bytes and decoded normalized endpoint pixels checked for duplicates; all frames decoded for counts; exact generator parameter JSON checked across splits. Video copies with changed encoding and different endpoints are not detected; prior historical exposure unknown.",
+  "pixel_endpoint_collisions": [],
+  "decoded_frame_count_discrepancies": [],
+  "cross_split_identical_parameters": [],
+  "full_decode_count": 260
+}

@@ -1,0 +1,53 @@
+{
+  "trial_id": "t0002",
+  "role": "improvement",
+  "status": "completed",
+  "simulated": false,
+  "error": null,
+  "artifacts": {
+    "trial": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/trials/t0002"
+  },
+  "result": {
+    "simulated": false,
+    "checkpoint": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/trials/t0002/train/last.pt",
+    "checkpoint_sha256": "ff3083c7b0c9bb51fbac7da32d6f6922d008dc180b3a2fd605a115bf501f693a",
+    "dev": {
+      "mean": 0.2335632995514258,
+      "n": 50,
+      "n_invalid": 0,
+      "per_item": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/trials/t0002/dev/per_item.jsonl"
+    },
+    "cost": {
+      "train": {
+        "peak_memory_bytes": 27705894912.0,
+        "wall_seconds": 59.420145788928494,
+        "world_size": 4,
+        "peak_memory_per_rank": [
+          27703792640,
+          27703733248,
+          27708767232,
+          27707286528
+        ],
+        "simulated": false
+      },
+      "dev": {
+        "peak_memory_bytes": 10194186752.0,
+        "wall_seconds": 138.42326500685886,
+        "world_size": 4,
+        "peak_memory_per_rank": [
+          10194186752,
+          10194186752,
+          10194178560,
+          10194194944
+        ],
+        "simulated": false
+      }
+    },
+    "config_sha256": "d4a30249822aff96fa4f57d1bee4b1d21f9842fe09c6ba976850bfddc0ae498b",
+    "data_sha256": "d066720e60c02f13b87545a7ec8ee354dd986a0e2f79d7049683b1af856a8204",
+    "logs": [
+      "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/trials/t0002/train.log",
+      "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/trials/t0002/dev.log"
+    ]
+  }
+}

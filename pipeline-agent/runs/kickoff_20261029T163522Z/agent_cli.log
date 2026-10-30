@@ -1,0 +1,20 @@
+{
+  "trial_id": null,
+  "error": null,
+  "artifacts": {
+    "logs": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/experiment/agent_logs/9378d4b9233742028cba32138d8c54d5"
+  },
+  "status": "completed",
+  "isolation": "protocol_only",
+  "resume": null,
+  "command": [
+    "codex",
+    "exec",
+    "--dangerously-bypass-approvals-and-sandbox",
+    "--skip-git-repo-check",
+    "--json",
+    "-"
+  ],
+  "returncode": 0,
+  "session_id": "01a18898-b275-7c11-9bdd-c0b60a3ec99a"
+}

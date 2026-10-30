@@ -1,0 +1,12 @@
+{
+  "peak_memory_bytes": 10194186752.0,
+  "wall_seconds": 138.42326500685886,
+  "world_size": 4,
+  "peak_memory_per_rank": [
+    10194186752,
+    10194186752,
+    10194178560,
+    10194194944
+  ],
+  "simulated": false
+}

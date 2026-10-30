@@ -1,0 +1,47 @@
+{
+  "mode": "simulation",
+  "trials": {
+    "t0001": {
+      "trial_id": "t0001",
+      "role": "baseline",
+      "status": "completed",
+      "simulated": true,
+      "error": null,
+      "artifacts": {
+        "trial": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/simulation/trials/t0001"
+      },
+      "result": {
+        "simulated": true,
+        "kind": "simulation_receipt",
+        "dev": {
+          "synthetic_score": 0.5
+        },
+        "checkpoint": null
+      }
+    },
+    "t0002": {
+      "trial_id": "t0002",
+      "role": "improvement",
+      "status": "completed",
+      "simulated": true,
+      "error": null,
+      "artifacts": {
+        "trial": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/simulation/trials/t0002"
+      },
+      "result": {
+        "simulated": true,
+        "kind": "simulation_receipt",
+        "dev": {
+          "synthetic_score": 0.5
+        },
+        "checkpoint": null
+      }
+    }
+  },
+  "requests": {
+    "baseline": "t0001",
+    "second": "t0002"
+  },
+  "selection": "t0001",
+  "config_sha256": "e6ad869645a7a8d647518af69720d81cc051a620228360a510ef6d9d1f5d0176"
+}

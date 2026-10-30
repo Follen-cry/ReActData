@@ -1,0 +1,20 @@
+[
+  {
+    "id": "0",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nSynthetic demo"
+      },
+      {
+        "from": "gpt",
+        "value": "<img>"
+      }
+    ],
+    "images": [
+      "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/simulation/trials/t0001/dataset/images/0_f0.png"
+    ],
+    "target_image": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/simulation/trials/t0001/dataset/images/0_final.png",
+    "cond_image": "/scratch/network/ssd2/junlin/ReActData-mod/pipeline-agent/runs/kickoff_20261029T163522Z/simulation/trials/t0001/dataset/images/0_f0.png"
+  }
+]

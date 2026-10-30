@@ -1,0 +1,1 @@
+{"counts": {"train": 160, "dev": 50, "test": 50}, "full_decode_count": 260, "pixel_endpoint_collisions": [], "decoded_frame_count_discrepancies": [], "cross_split_identical_parameters": []}

@@ -1,0 +1,40 @@
+# Experiment result
+
+{
+  "status": "finalized",
+  "trial_id": "t0001",
+  "simulated": true,
+  "dev": {
+    "synthetic_score": 0.5
+  },
+  "checkpoint": null,
+  "integrity": {
+    "dataset": {
+      "images/0_f0.png": "564ef8f904ca49ea7df2545bd7b28b533eba1a6545fc6421e20568ad26c2ca7b",
+      "images/0_final.png": "9541e6514d2f1a429ac95af125254c46a619283a94695e3b02757b0235da3807",
+      "manifest.jsonl": "847f4af19f7ab8edb2c3c85cbc0dd1a8611a3c6214ba09710f08c52b7bb377c2"
+    },
+    "code": {
+      "build_dataset.py": "cf6bb3183b2dec86e9cc27dff33abe4708b462625bd883350f75d8481d66f284",
+      "protocols/agent.md": "89c10d817874da11b8a6dfa68ea0e777054d0503809040604cac595be20b9bd6",
+      "task.json": "e6ad869645a7a8d647518af69720d81cc051a620228360a510ef6d9d1f5d0176"
+    },
+    "config": "e6ad869645a7a8d647518af69720d81cc051a620228360a510ef6d9d1f5d0176"
+  },
+  "selection_policy": {
+    "metric": "dev.mean",
+    "tie_break": "baseline_then_earliest",
+    "retrain": false
+  },
+  "seeds": {
+    "model_init_seed": 42,
+    "train_seed": 1000,
+    "build_seed": 1000,
+    "eval_seed": 0
+  },
+  "test": {
+    "simulated": true,
+    "synthetic_score": 0.5,
+    "checkpoint": null
+  }
+}

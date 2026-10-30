@@ -3,6 +3,7 @@ from pathlib import Path
 from storage import read,write,inventory,lock,digest
 from dataset import validate,local
 import training
+import campaign
 
 BASE=Path(__file__).resolve().parent
 
@@ -30,6 +31,7 @@ def run(root,dataset,key):
         if s["mode"]!=c["mode"]: raise ValueError("mode cannot change")
         rows=validate(dataset,c)
         tid=f"t{len(s['trials'])+1:04d}";t=root/"trials"/tid
+        if c["mode"] == "real": campaign.register(c["campaign"],root,tid,key,c["estimated_trial_seconds"])
         record={"trial_id":tid,"role":"baseline" if not s["trials"] else "improvement","status":"preparing","simulated":c["mode"]=="simulation","error":None,"artifacts":{"trial":str(t)}}
         s["requests"][key]=tid;s["trials"][tid]=record;write(root/"state.json",s)
         try:
@@ -54,10 +56,12 @@ def run(root,dataset,key):
             validate(dest,c) # detect workspace races while copying
             write(t/"integrity.json",{"dataset":inventory(dest),"code":inventory(t/"code"),"config":inventory(t)["config.json"]})
             record["status"]="running";write(root/"state.json",s)
+            if c["mode"] == "real": campaign.update(c["campaign"],root,key,"running")
             record["result"]=training.train_and_dev(t,c)
             record["status"]="completed"
         except Exception as e:
             record.update(status="failed",error=str(e))
+        if c["mode"] == "real": campaign.update(c["campaign"],root,key,record["status"])
         write(root/"state.json",s);write(t/"result.json",record)
         return record
 
