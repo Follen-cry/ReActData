@@ -1,0 +1,62 @@
+# Stable research contract. No server paths or Agent model settings here.
+task_id: shape_color_video_ssl
+goal: Improve video SSL supervision by selecting videos, input/context frames, target frames and sample order, measured on frozen F0-to-final dev.
+dataset_id: shape_color_train
+sources_manifest: train_sources.jsonl
+model_key: internvlu_base
+training_config: ../configs/training/internvlu.yaml
+resources:
+  model_library: internvlu_train
+  prompt_wrapper: prompt_wrapper
+  scorer_cvlib: scorer_cvlib
+dev_id: shape_color_dev
+test_id: shape_color_test
+strategy_timeout_seconds: 1800
+estimated_trial_seconds: 3600
+preinit: true
+finalize: manual
+frame_policy:
+  mode: select
+  max_input_frames: 4
+  target: select
+max_dataset_bytes: 500000000
+max_text_chars: 8000
+contract:
+  task: shape_color_then_scale
+  rows_per_trial: 128
+  max_trials: 7
+  model_init_seed: 42
+  train_seed: 1000
+  build_seed: 1000
+  eval_seed: 0
+  training:
+    max_steps: 8
+    global_batch: 16
+    epochs: 1
+    shuffle: false
+    warmup_steps: 3
+    scheduler: linear_warmup_then_cosine
+    lora_lr: 0.00002
+    gen_decoder_lr: 0.0001
+    lm_weight: 0.0
+    gen_weight: 0.5
+    gen_warmup_steps: 0
+    image_size: 512
+    checkpoint: last_step
+    restart_from_base_each_trial: true
+    timeout_seconds: 36000
+  evaluation:
+    samples: 50
+    test_samples: 50
+    diffusion_steps: 20
+    all_cfg_scale: 4.5
+    part_cfg_scale: 2.0
+    scorer: analogy_grid_v1_scale
+    aggregation: arithmetic_mean_including_invalid
+    invalid_image_score: 0.0
+    dev_timeout_seconds: 28800
+    test_timeout_seconds: 28800
+  selection:
+    metric: dev.mean
+    tie_break: baseline_then_earliest
+    retrain: false

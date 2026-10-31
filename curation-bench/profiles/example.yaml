@@ -1,0 +1,18 @@
+# Machine-local paths only. Relative paths resolve against this file.
+python: /absolute/internvlu-env/bin/python
+
+dataset_path_map:
+  shape_color_train: /absolute/data/shape_color_train
+model_path_map:
+  internvlu_base: /absolute/models/internvlu/base-snapshot
+eval_path_map:
+  shape_color_dev: /absolute/eval/shape_color/dev.jsonl
+  shape_color_test: /absolute/eval/shape_color/test.jsonl
+resource_path_map:
+  internvlu_train: /absolute/code/internvlu-train
+  prompt_wrapper: /absolute/code/vbvr_target_pred_prompt_wrap.py
+  scorer_cvlib: /absolute/code/cvlib.py
+  training_meta: /absolute/data/internvlu-training-meta.json
+
+gpu_allocation: [0, 1, 2, 3]  # must match the campaign's assigned GPUs
+env: {}  # e.g. NCCL settings; never put credentials in this file

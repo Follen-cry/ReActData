@@ -1,0 +1,8 @@
+{
+  "deadline": "REPLACE_WITH_FIXED_ISO8601_DEADLINE_WITH_TIMEZONE",
+  "report_reserve_seconds": 5400,
+  "gpu_allocation": [0, 1, 2, 3],
+  "max_concurrent_gpus": 4,
+  "training_budget": 7,
+  "training_attempts": []
+}

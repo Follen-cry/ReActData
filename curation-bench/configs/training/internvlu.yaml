@@ -1,0 +1,96 @@
+# Based on the first real pipeline-agent train.yaml; paths/recipe values resolve from profile/task.
+name: video-ssl-internvlu
+model:
+  snapshot: __MODEL_PATH__
+  conv_template: qwen2_5-chat-v3
+  force_image_size: 448
+  vision_select_layer: -1
+  ps_version: v2
+  drop_path_rate: 0.0
+  grad_checkpoint: true
+adapters:
+  vit: frozen
+  mlp: full
+  llm: lora
+  llm_lora_rank: 32
+  llm_lora_alpha: null
+  llm_lora_dropout: 0.05
+  special_tokens: full
+  gen_decoder: full
+  vae: frozen
+data:
+  train_meta: __TRAIN_META__
+  max_dynamic_patch: 1
+  min_dynamic_patch: 1
+  dynamic_image_size: false
+  use_thumbnail: false
+  normalize_type: imagenet
+  max_seq_length: 4096
+  pad_to_max_length: false
+  num_workers: 4
+  system_prompt: auto
+  on_bad_row: raise
+gen_image:
+  size: 512
+  resize_mode: area
+  cond_min_pixels: 262144
+  cond_max_pixels: 1048576
+  cond_max_length: 1024
+  vae_cond: single
+  cfg_dropout: 0.1
+  cfg_dropout_all_frac: 0.5
+  drop_vae_cond_on_all: true
+  drop_response: strip
+  allow_multi_vae_cond: false
+loss:
+  gen_weight: __GEN_WEIGHT__
+  gen_warmup_steps: __GEN_WARMUP_STEPS__
+  lm_weight: __LM_WEIGHT__
+  vae_latents: sample
+  cond_vae_latents: mode
+optim:
+  lr: __LORA_LR__
+  gen_decoder_lr: __GEN_DECODER_LR__
+  weight_decay: 0.05
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+  max_grad_norm: 1.0
+  scheduler: cosine
+  warmup_ratio: __WARMUP_RATIO__
+train:
+  output_dir: .
+  epochs: 1
+  max_steps: __MAX_STEPS__
+  global_batch_size: __GLOBAL_BATCH__
+  per_device_batch_size: 1
+  seed: __MODEL_INIT_SEED__
+  log_every: 1
+dist:
+  backend: nccl
+  find_unused_parameters: true
+  static_graph: false
+checkpoint:
+  every_steps: 500
+  keep_last: 2
+  resume: null
+  export_at_end: false
+  export_dir: null
+eval:
+  sets: []
+  every_steps: null
+  intervals: 5
+  at_start: false
+  diffusion_steps: __DIFFUSION_STEPS__
+  seed: __EVAL_SEED__
+  log_images: 6
+  max_rows: null
+  all_cfg_scale: __ALL_CFG__
+  part_cfg_scale: __PART_CFG__
+  generation_mode: auto
+tracking:
+  backends:
+  - jsonl
+  project: video-ssl-method
+  run_name: null
