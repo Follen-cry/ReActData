@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.coverage
+.coverage.*
+htmlcov/
+
+# Environments
+.venv/
+venv/
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.test-deps/
+.uv-bootstrap/
+.uv-cache/
+
+# Experiment artifacts
+.video_ssl_suite
+.workspaces/
+runs/
+output/
+logs/
+nohup.out
+*.nohup.out
+*.log
+
+# Jupyter / notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE / editor / agent tooling
+.claude/
+.codex/
+.openhands/
+.DS_Store
+*.swp
+*.swo
+
+# Secrets
+.env
+profiles/*.yaml
+!profiles/example.yaml
+
+# Large binary artifacts (keep run metadata, skip huge data files)
+*.arrow
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+
+# Ignore any future local staging; retained archives live outside this checkout
+.archive/

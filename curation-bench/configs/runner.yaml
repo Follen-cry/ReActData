@@ -1,0 +1,9 @@
+# Agent/execution settings, independent of the machine resource profile.
+mode: native
+agent:
+  executable: codex
+  model: null
+  reasoning_effort: null
+# timeout_seconds: 21600  # entire continuous session; campaign deadline also applies
+# cli_python: /absolute/python3.12  # optional uv CLI interpreter selector; prepare .venv with this Python
+docker: docker.yaml  # resolved only when mode=docker; ignored in native mode

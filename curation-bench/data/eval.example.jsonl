@@ -1,0 +1,1 @@
+{"id":"dev_000","image":["dev_000/f0.png"],"cond_image":"dev_000/f0.png","target_image":"dev_000/final.png","conversations":[{"from":"human","value":"<image>\nREPLACE_WITH_EXACT_EVALUATION_TEXT"},{"from":"gpt","value":"<img>"}]}

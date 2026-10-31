@@ -1,0 +1,10 @@
+# Container-only settings. Native mode does not read this file.
+image: REPLACE_WITH_PINNED_GPU_IMAGE
+cli_python: /opt/video-ssl-method/.venv/bin/python
+mount_profile_resources: true
+env:
+  PYTHONUNBUFFERED: '1'
+  UV_PROJECT_ENVIRONMENT: /opt/video-ssl-method/.venv
+read_only_mounts: []  # optional extra host directories, e.g. HF cache blobs
+credential_files: {} # /home/USER/.codex/auth.json: /tmp/video-ssl-home/.codex/auth.json
+pass_env: []         # variable names only; values come from host environment
